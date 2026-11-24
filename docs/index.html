@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dsh-tencent-meeting — 把腾讯会议接进 DeepSeek Harness</title>
+<meta name="description" content="腾讯会议官方 CLI 的薄封装：面板里管会议，对话里用工具，会后五份文档交给你配置的模型。MIT 开源。">
+<style>
+/* ===== 设计变量 ===== */
+:root{
+  --bg:#fafafa;
+  --surface:#fff;
+  --ink:#0b1220;
+  --ink-2:#3f4756;
+  --muted:#6b7280;
+  --faint:#9aa1ad;
+  --line:#e8eaee;
+  --line-2:#f0f1f4;
+  --well:#f6f7f9;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --r-lg:18px;
+  --r-md:14px;
+  --shadow-card:0 1px 2px rgba(16,24,40,.03);
+  --shadow-lift:0 16px 36px -20px rgba(16,24,40,.20);
+  --shadow-shot:0 2px 8px rgba(16,24,40,.05);
+  --shadow-hero:0 34px 80px -34px rgba(16,24,40,.26),0 2px 8px rgba(16,24,40,.04);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;
+  background-color:var(--bg);
+  /* 极淡的对角细线网格纹理 */
+  background-image:
+    repeating-linear-gradient(45deg, rgba(16,24,40,.035) 0, rgba(16,24,40,.035) 1px, transparent 1px, transparent 110px),
+    repeating-linear-gradient(-45deg, rgba(16,24,40,.035) 0, rgba(16,24,40,.035) 1px, transparent 1px, transparent 110px);
+  color:var(--ink-2);
+  font:16px/1.7 var(--sans);
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block;height:auto}
+figure{margin:0}
+a{color:var(--ink);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:.88em;background:var(--well);border:1px solid var(--line-2);border-radius:6px;padding:1px 5px;color:#1f2937}
+:focus-visible{outline:2px solid #0b1220;outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1160px;margin:0 auto;padding:0 32px}
+
+/* ===== 中英切换（纯 CSS radio，无脚本可用） ===== */
+.lang-radio{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.e{display:none}
+#lang-en:checked~.page .z{display:none}
+#lang-en:checked~.page .e{display:inline}
+#lang-en:checked~.page .e.blk{display:block}
+
+/* ===== 顶部细导航 ===== */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(250,250,250,.86);
+  -webkit-backdrop-filter:saturate(180%) blur(12px);
+  backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-in{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;
+  height:64px;
+}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;min-width:0}
+.mark{flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;letter-spacing:0}
+.tag{font-family:var(--sans);font-size:11px;font-weight:500;color:var(--muted);background:var(--well);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.links{display:flex;align-items:center;justify-content:center;gap:28px;font-size:14px}
+.links>a{color:#4b5563}
+.links>a:hover{color:var(--ink);text-decoration:none}
+.actions{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.switch{display:inline-flex;padding:2px;background:var(--well);border:1px solid var(--line);border-radius:999px}
+.switch label{padding:3px 12px;border-radius:999px;font-size:13px;line-height:1.5;color:var(--muted);cursor:pointer;user-select:none}
+.switch label:hover{color:var(--ink)}
+#lang-zh:checked~.page [for=lang-zh],#lang-en:checked~.page [for=lang-en]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(16,24,40,.10)}
+
+/* 按钮 */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 18px;border:1px solid transparent;border-radius:11px;
+  background:#fff;color:var(--ink);font-size:14px;font-weight:500;line-height:1.4;
+  cursor:pointer;white-space:nowrap;
+  transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease,border-color .18s ease;
+}
+.btn:hover{text-decoration:none}
+.btn-ghost{border-color:#e2e5ea;background:#fff;color:var(--ink)}
+.btn-ghost:hover{border-color:#c9cfd9;transform:translateY(-1px);box-shadow:0 6px 16px -8px rgba(16,24,40,.18)}
+.btn-dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn-dark:hover{background:#000;color:#fff;transform:translateY(-1px);box-shadow:0 10px 22px -10px rgba(15,23,42,.45)}
+.btn-lg{padding:13px 24px;border-radius:13px;font-size:15px;font-weight:600}
+
+/* 移动端折叠菜单（details，无脚本） */
+.menu{display:none}
+
+/* ===== Hero ===== */
+.hero{padding:72px 0 0;text-align:center}
+.eyebrow{font-family:var(--mono);font-size:12.5px;color:var(--faint);letter-spacing:.10em;margin:0 0 20px}
+h1{
+  margin:0 auto 22px;max-width:15em;
+  font-size:clamp(38px,6vw,74px);line-height:1.06;letter-spacing:-.035em;font-weight:800;color:var(--ink);
+}
+.lead{margin:0 auto 16px;max-width:44em;font-size:clamp(16px,1.4vw,18px);color:#5b6472;line-height:1.7}
+.meta{margin:0 auto 30px;font-size:13.5px;color:var(--faint)}
+.meta code{font-size:12.5px}
+
+.cmd{
+  max-width:660px;margin:0 auto 28px;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:16px 18px;box-shadow:var(--shadow-card);
+}
+.cmd-label{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.cmd-row{display:flex;align-items:center;gap:10px}
+.cmd-row code{
+  flex:1;min-width:0;overflow-x:auto;white-space:nowrap;
+  background:var(--well);border:1px solid var(--line-2);border-radius:10px;
+  padding:12px 14px;font-size:13.5px;color:#1f2937;
+}
+.copy{
+  flex:none;border:1px solid #e2e5ea;border-radius:10px;background:#fff;color:#4b5563;
+  font:13px/1.2 var(--sans);padding:11px 14px;cursor:pointer;
+  transition:border-color .18s ease,color .18s ease,background-color .18s ease;
+}
+.copy:hover{border-color:#c9cfd9;color:var(--ink)}
+.copy.done{color:var(--ink);border-color:#0b1220;background:var(--well)}
+.cmd-note{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.cmd-note code{font-size:12px}
+
+.hero-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:0 auto}
+
+.hero-shot{max-width:1180px;margin:60px auto 0}
+.hero-shot img,.shot img{border:1px solid var(--line);background:#fff}
+.hero-shot img{border-radius:20px;box-shadow:var(--shadow-hero)}
+.shot img{border-radius:16px;box-shadow:var(--shadow-shot)}
+.cap{font-size:13px;color:var(--muted);margin-top:14px;line-height:1.6}
+.hero-shot .cap{text-align:center}
+
+/* ===== 区块通用 ===== */
+section{padding:88px 0 8px;scroll-margin-top:84px}
+.kicker{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.12em;text-transform:uppercase;margin:0 0 14px}
+h2{margin:0 0 14px;font-size:clamp(26px,3.2vw,36px);line-height:1.15;letter-spacing:-.03em;font-weight:800;color:var(--ink)}
+.sec-lede{margin:0 0 38px;font-size:16px;color:#5b6472;max-width:46em}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.card{
+  border:1px solid var(--line);border-radius:var(--r-lg);padding:26px;background:var(--surface);
+  box-shadow:var(--shadow-card);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.card:hover{transform:translateY(-3px);border-color:#dfe3e9;box-shadow:var(--shadow-lift)}
+.card h3{margin:0 0 10px;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--ink);display:flex;align-items:center;gap:10px}
+.card p{margin:0;font-size:14.5px;color:#4b5563;line-height:1.75}
+.ico{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--well);color:var(--ink);font-size:14px;font-weight:700;border:1px solid var(--line-2)}
+.num{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);background:var(--well);border:1px solid var(--line-2);border-radius:999px;padding:2px 9px}
+
+/* 左右分栏 */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center;padding:44px 0}
+.split.rev>.shot{order:2}
+.split h3{margin:0 0 12px;font-size:clamp(20px,2.2vw,26px);letter-spacing:-.02em;font-weight:800;color:var(--ink)}
+.split p{margin:0 0 12px;font-size:15px;color:#4b5563;line-height:1.75}
+.split p:last-child{margin-bottom:0}
+.fact{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.fact li{font-size:12.5px;color:#4b5563;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+
+/* 为什么值得用 */
+.why{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.why .item{
+  border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;background:var(--surface);
+  box-shadow:var(--shadow-card);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.why .item:hover{transform:translateY(-3px);border-color:#dfe3e9;box-shadow:var(--shadow-lift)}
+.why .item h3{margin:0 0 8px;font-size:16px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:10px}
+.why .item p{margin:0;font-size:14px;color:#4b5563;line-height:1.75}
+
+/* 上手步骤 */
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.step{
+  display:flex;gap:16px;border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 24px;background:var(--surface);
+  box-shadow:var(--shadow-card);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.step:hover{transform:translateY(-3px);border-color:#dfe3e9;box-shadow:var(--shadow-lift)}
+.step .n{flex:none;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);background:var(--well);border:1px solid var(--line-2);border-radius:999px;padding:2px 10px;height:fit-content}
+.step h3{margin:0 0 8px;font-size:16px;font-weight:700;color:var(--ink)}
+.step p{margin:0;font-size:14px;color:#4b5563;line-height:1.75}
+.step code{font-size:12.5px}
+
+/* ===== 页脚 ===== */
+footer{border-top:1px solid var(--line);padding:52px 0 64px;margin-top:80px;font-size:13.5px;color:var(--muted)}
+.foot{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.foot a{color:var(--ink)}
+.req{margin-top:18px;font-family:var(--mono);font-size:12px;color:var(--faint);line-height:1.7;word-break:break-word}
+
+/* ===== 渐显动效（仅 opacity + translateY） ===== */
+.js .reveal{opacity:0;transform:translateY(16px)}
+.js .reveal.in{opacity:1;transform:none;transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
+.js .reveal.d1{transition-delay:.06s}
+.js .reveal.d2{transition-delay:.12s}
+.js .reveal.d3{transition-delay:.18s}
+
+/* ===== 响应式 ===== */
+@media (max-width:980px){
+  .wrap{padding:0 24px}
+  .split{gap:36px}
+  section{padding:72px 0 8px}
+  .hero{padding:56px 0 0}
+  .hero-shot{margin-top:44px}
+}
+@media (max-width:760px){
+  .topbar-in{display:flex;justify-content:space-between;gap:12px}
+  .links{display:none}
+  .actions .btn-ghost{display:none}
+  .menu{display:block;position:relative}
+  .menu-btn{
+    width:38px;height:38px;border:1px solid #e3e6eb;border-radius:11px;background:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    cursor:pointer;list-style:none;
+  }
+  .menu-btn::-webkit-details-marker{display:none}
+  .menu-btn span{display:block;width:15px;height:1.6px;border-radius:1px;background:var(--ink)}
+  .menu-panel{
+    position:absolute;right:0;top:calc(100% + 10px);min-width:210px;
+    background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px;
+    box-shadow:0 24px 48px -24px rgba(16,24,40,.28);
+    display:flex;flex-direction:column;
+  }
+  .menu-panel a{padding:10px 12px;border-radius:9px;font-size:14px;color:#374151}
+  .menu-panel a:hover{background:#f5f6f8;text-decoration:none}
+  .menu-panel .menu-sep{height:1px;background:var(--line-2);margin:6px 4px}
+  .grid3,.why,.steps{grid-template-columns:1fr}
+  .split{grid-template-columns:1fr;gap:24px;padding:34px 0}
+  .split.rev>.shot{order:0}
+}
+@media (max-width:420px){
+  .wrap{padding:0 18px}
+  .brand{font-size:12.5px;gap:7px}
+  .mark{width:22px;height:22px;font-size:10px}
+  .tag{display:none}
+  .switch label{padding:3px 9px;font-size:12px}
+  .hero{padding:40px 0 0}
+  h1{font-size:28px}
+  .hero-actions .btn{width:100%}
+  section{padding:60px 0 4px}
+  .card,.why .item,.step{padding:20px}
+  .cmd{padding:14px}
+  .cmd-row code{padding:11px 12px;font-size:12.5px}
+  .copy{padding:11px 12px}
+  .foot{flex-direction:column;align-items:flex-start}
+}
+
+/* ===== 动效可关闭：尊重系统减弱动态设置 ===== */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;transition-delay:0ms!important;
+  }
+  .js .reveal{opacity:1;transform:none}
+}
+</style>
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+<input class="lang-radio" type="radio" name="lang" id="lang-zh" checked>
+<input class="lang-radio" type="radio" name="lang" id="lang-en">
+
+<div class="page">
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="brand"><span class="mark">TM</span>dsh-tencent-meeting<span class="tag">v1.3.0</span></div>
+    <nav class="links">
+      <a href="#cap"><span class="z">能做什么</span><span class="e">What it does</span></a>
+      <a href="#shots"><span class="z">界面</span><span class="e">Screens</span></a>
+      <a href="#why"><span class="z">为什么值得用</span><span class="e">Why it holds up</span></a>
+    </nav>
+    <div class="actions">
+      <span class="switch">
+        <label for="lang-zh">中文</label>
+        <label for="lang-en">EN</label>
+      </span>
+      <a class="btn btn-ghost" href="https://github.com/ikevss/dsh-tencent-meeting">GitHub</a>
+      <details class="menu">
+        <summary class="menu-btn" aria-label="打开菜单"><span></span><span></span></summary>
+        <div class="menu-panel">
+          <a href="#cap"><span class="z">能做什么</span><span class="e">What it does</span></a>
+          <a href="#shots"><span class="z">界面</span><span class="e">Screens</span></a>
+          <a href="#why"><span class="z">为什么值得用</span><span class="e">Why it holds up</span></a>
+          <a href="#install"><span class="z">上手</span><span class="e">Setup</span></a>
+          <span class="menu-sep"></span>
+          <a href="https://github.com/ikevss/dsh-tencent-meeting">GitHub</a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- hero -->
+  <div class="hero">
+    <p class="eyebrow reveal"><span class="z">DeepSeek Harness 插件</span><span class="e">A plugin for DeepSeek Harness</span></p>
+    <h1>
+      <span class="z">把腾讯会议接进<br>DeepSeek Harness</span>
+      <span class="e">Tencent Meeting,<br>inside DeepSeek Harness</span>
+    </h1>
+    <p class="lead reveal">
+      <span class="z">面板里管会议，对话里用工具，会后由你自己配置的模型产出五份文档。</span>
+      <span class="e blk">Manage meetings in a panel, drive them from tools in the conversation, and let your own DSH model turn a finished meeting into five documents.</span>
+    </p>
+    <p class="meta reveal">
+      <span class="z">腾讯会议官方 CLI（<code>@tencentcloud/tmeet</code>）的一层薄封装 · MIT 开源 · 作者 ikevss</span>
+      <span class="e blk">A thin shell over the official Tencent Meeting CLI (<code>@tencentcloud/tmeet</code>) · MIT licensed · by ikevss</span>
+    </p>
+
+    <div class="cmd reveal">
+      <div class="cmd-label"><span class="z">安装插件</span><span class="e">Install the plugin</span></div>
+      <div class="cmd-row">
+        <code>dsh plugin add dsh-tencent-meeting</code>
+        <button class="copy" type="button" data-copy="dsh plugin add dsh-tencent-meeting"><span class="z">复制</span><span class="e">Copy</span></button>
+      </div>
+      <p class="cmd-note">
+        <span class="z">CLI 不随包分发：首次使用时自动安装 <code>@tencentcloud/tmeet@1.1.0</code>，进度显示在面板里。</span>
+        <span class="e blk">The CLI is not bundled: it is installed automatically on first use, with progress shown in the panel.</span>
+      </p>
+    </div>
+
+    <div class="hero-actions reveal">
+      <a class="btn btn-dark btn-lg" href="#install"><span class="z">两步上手（含授权）→</span><span class="e">Two-step setup, incl. authorisation →</span></a>
+      <a class="btn btn-ghost btn-lg" href="https://github.com/ikevss/dsh-tencent-meeting/issues"><span class="z">提 Issue</span><span class="e">Open an issue</span></a>
+    </div>
+
+    <figure class="hero-shot reveal">
+      <img src="screenshots/home.png" alt="腾讯会议面板：左侧进行中与历史会议列表，右侧详情页与参会人" width="1490" height="952">
+      <figcaption class="cap"><span class="z">面板主页：左栏进行中/即将开始，右栏历史会议。</span><span class="e">Panel home: in-progress and upcoming on the left, history on the right.</span></figcaption>
+    </figure>
+  </div>
+
+  <!-- capabilities -->
+  <section id="cap">
+    <p class="kicker reveal"><span class="e">What it does</span><span class="z">能做什么</span></p>
+    <h2 class="reveal"><span class="z">三件事，覆盖一场会的全过程</span><span class="e">Three things, across the life of a meeting</span></h2>
+    <p class="sec-lede reveal">
+      <span class="z">所有会议事实都来自腾讯会议官方 CLI，所有生成的文档都来自你在 DSH 里选择的模型或 agent 预设。</span>
+      <span class="e blk">Every meeting fact comes from the official Tencent Meeting CLI; every generated document comes from the model or agent preset you configured in DSH.</span>
+    </p>
+
+    <div class="grid3">
+      <div class="card reveal">
+        <h3><span class="ico">▤</span><span class="z">面板里管会</span><span class="e">In the panel</span></h3>
+        <p>
+          <span class="z">左栏多一个腾讯会议入口。主页分开进行中、即将开始与历史；点进任意一场，详情页有概览、逐字稿、智能纪要、时间轴、待办与会后产出。建会、改会、取消也在这里。</span>
+          <span class="e blk">A Tencent Meeting icon in the DSH sidebar. Home separates in-progress and upcoming from history; each meeting opens a detail page with overview, transcript, smart minutes, timeline, todos and outputs. Creating, editing and cancelling happen here too.</span>
+        </p>
+      </div>
+      <div class="card reveal d1">
+        <h3><span class="ico">⌘</span><span class="z">对话里管会</span><span class="e">In the conversation</span></h3>
+        <p>
+          <span class="z">14 个 <code>tm_*</code> 工具已注册进 DSH：列会、搜会、读详情、建会、改会、取消、取纪要，不用离开聊天窗口。指认某场会，会议 ID 或 9 位会议号都可以。</span>
+          <span class="e blk">Fourteen <code>tm_*</code> tools are registered with DSH — list, search, read, create, update, cancel and minutes retrieval. Identify a meeting by its ID or by its 9-digit code.</span>
+        </p>
+      </div>
+      <div class="card reveal d2">
+        <h3><span class="ico">✦</span><span class="z">会后五份产出</span><span class="e">After the meeting</span></h3>
+        <p>
+          <span class="z">会议洞察分析、公司视角纪要、投资人视角纪要、复盘报告、问答清单。素材优先逐字稿，其次腾讯智能纪要；两者都没有就停下并说明，不会只凭标题编一份。</span>
+          <span class="e blk">Five documents on demand: meeting insight, company-view minutes, investor-view minutes, review report and Q&amp;A list. Transcript first, smart minutes second; with neither, generation stops and says why.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- screens -->
+  <section id="shots">
+    <p class="kicker reveal"><span class="e">Screens</span><span class="z">界面</span></p>
+    <h2 class="reveal"><span class="z">界面即功能</span><span class="e">The interface is the feature</span></h2>
+
+    <div class="split">
+      <figure class="shot reveal">
+        <img src="screenshots/outputs.png" alt="会后产出页签：会议洞察分析、公司视角纪要、投资人视角纪要、复盘报告、问答清单五份产出" width="1490" height="952">
+        <figcaption class="cap"><span class="z">详情页页签：一场会的全部内容在一个页面里。</span><span class="e">Detail page tabs: everything about a meeting on one page.</span></figcaption>
+      </figure>
+      <div class="reveal d1">
+        <h3><span class="z">一场会的材料，一次看全</span><span class="e">All of a meeting's material, in one place</span></h3>
+        <p>
+          <span class="z">逐字稿、智能纪要、时间轴、待办、会后产出都在详情页。没有录制或转写时如实提示原因，而不是拿标题凑一份内容。</span>
+          <span class="e blk">Transcript, smart minutes, timeline, todos and outputs live on the detail page. When there is no recording or transcript it says why, instead of filling the gap with the title.</span>
+        </p>
+        <ul class="fact">
+          <li><span class="z">素材优先逐字稿</span><span class="e">Transcript first</span></li>
+          <li><span class="z">其次智能纪要</span><span class="e">Smart minutes second</span></li>
+          <li><span class="z">无素材即停并说明</span><span class="e">No material, no invention</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="split rev">
+      <figure class="shot reveal">
+        <img src="screenshots/create.png" alt="新建会议弹窗：填内容、确认两步，底部有步骤指示" width="1490" height="952">
+        <figcaption class="cap"><span class="z">建会第一步：先选会议类型，三步走完。</span><span class="e">Creating a meeting: pick a type first, then three steps.</span></figcaption>
+      </figure>
+      <div class="reveal d1">
+        <h3><span class="z">写操作先预览，确认才提交</span><span class="e">Writes are previewed before they happen</span></h3>
+        <p>
+          <span class="z">建会、改会、取消、邀请、改参会人、申请录制权限，都会先把将要发生的事摆出来，你确认才提交。取消不可恢复，确认前会先查出主题、时间、会议号给你核对。</span>
+          <span class="e blk">Create, update, cancel, invite, participant edits and recording-permission requests all show what is about to change; nothing reaches Tencent Meeting until you confirm. Cancelling cannot be undone, and the confirmation shows the subject, time and meeting code first.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- why -->
+  <section id="why">
+    <p class="kicker reveal"><span class="e">Why it holds up</span><span class="z">为什么值得用</span></p>
+    <h2 class="reveal"><span class="z">四条，都是能验证的</span><span class="e">Four claims you can verify</span></h2>
+    <div class="why" style="margin-top:26px">
+      <div class="item reveal">
+        <h3><span class="num">01</span><span class="z">写操作先预览后确认</span><span class="e">Preview-first writes</span></h3>
+        <p>
+          <span class="z">写工具都收 <code>confirm</code>，不给就不动作；只读工具声明并发安全。</span>
+          <span class="e blk">Write tools take <code>confirm</code> and do nothing without it; read-only tools declare concurrency safety.</span>
+        </p>
+      </div>
+      <div class="item reveal d1">
+        <h3><span class="num">02</span><span class="z">不猜</span><span class="e">It does not fill gaps</span></h3>
+        <p>
+          <span class="z">拿不到的素材就如实说拿不到：不补数字、不编结论；投资人视角纪要做归纳，不给投资建议。</span>
+          <span class="e blk">Missing material is reported as missing — no invented figures, no fabricated conclusions. Investor-view minutes summarise; they do not advise.</span>
+        </p>
+      </div>
+      <div class="item reveal d2">
+        <h3><span class="num">03</span><span class="z">凭证边界写在明处</span><span class="e">Explicit credential boundaries</span></h3>
+        <p>
+          <span class="z">不读、不复制、不打印 <code>~/.tmeet</code> 下任何文件；登录交给 CLI，只转发授权链接；会议数据只发给你配置的模型供应商，且只在你按生成的那一刻。</span>
+          <span class="e blk">Never reads, copies or prints anything under <code>~/.tmeet</code>; sign-in stays with the CLI and only the authorisation link is relayed. Meeting data reaches only the model provider you configured, and only when you generate.</span>
+        </p>
+      </div>
+      <div class="item reveal d3">
+        <h3><span class="num">04</span><span class="z">一层薄封装，读完不费劲</span><span class="e">A thin shell, easy to read</span></h3>
+        <p>
+          <span class="z">不打包 <code>cordis</code>、<code>schemastery</code>、<code>dsh-tools</code>（走宿主的 peerDependencies），也不在磁盘上存会议镜像。</span>
+          <span class="e blk">No bundled <code>cordis</code>, <code>schemastery</code> or <code>dsh-tools</code> (host peer dependencies), and no meeting mirror written to disk.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- install -->
+  <section id="install">
+    <p class="kicker reveal"><span class="e">Setup</span><span class="z">上手</span></p>
+    <h2 class="reveal"><span class="z">两步，大约两分钟</span><span class="e">Two steps, roughly two minutes</span></h2>
+    <div class="steps" style="margin-top:26px">
+      <div class="step reveal">
+        <span class="n">1</span>
+        <div>
+          <h3><span class="z">装插件，重启 DSH</span><span class="e">Install the plugin, restart DSH</span></h3>
+          <p>
+            <span class="z">运行上面的 <code>dsh plugin add</code>，重启后左栏出现腾讯会议图标，设置里出现「腾讯会议」一节。</span>
+            <span class="e blk">Run <code>dsh plugin add</code> above and restart. A Tencent Meeting icon appears in the sidebar and a section appears in settings.</span>
+          </p>
+        </div>
+      </div>
+      <div class="step reveal d1">
+        <span class="n">2</span>
+        <div>
+          <h3><span class="z">打开面板，授权</span><span class="e">Open the panel, authorise</span></h3>
+          <p>
+            <span class="z">首屏只有一个「去授权」按钮；点它，浏览器里完成 OAuth 设备码授权即可。</span>
+            <span class="e blk">The first screen shows a single Authorise button. Press it and finish the OAuth device-code flow in the browser.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <span class="z">问题、需求与讨论：<a href="https://github.com/ikevss/dsh-tencent-meeting">github.com/ikevss/dsh-tencent-meeting</a> · <a href="mailto:ikevss@qq.com">ikevss@qq.com</a></span>
+      <span class="e blk">Issues, requests and questions: <a href="https://github.com/ikevss/dsh-tencent-meeting">github.com/ikevss/dsh-tencent-meeting</a> · <a href="mailto:ikevss@qq.com">ikevss@qq.com</a></span>
+    </div>
+    <div>
+      <span class="z">MIT · Copyright (c) 2026 ikevss</span>
+      <span class="e blk">MIT · Copyright (c) 2026 ikevss</span>
+    </div>
+  </div>
+  <div class="wrap req">
+    <span class="z">要求：DSH ≥ 0.2.1 · Node.js 22 · @tencentcloud/tmeet 1.1.0</span>
+    <span class="e blk">Requires: DSH ≥ 0.2.1 · Node.js 22 · @tencentcloud/tmeet 1.1.0</span>
+  </div>
+</footer>
+</div>
+
+<script>
+/* 极小内联脚本：1) 复制按钮  2) 进入视口渐显（无脚本时内容保持可见） */
+document.documentElement.classList.add('js');
+
+document.addEventListener('click', function (e) {
+  var b = e.target.closest ? e.target.closest('.copy') : null;
+  if (!b) return;
+  var t = b.getAttribute('data-copy') || '';
+  var done = function () {
+    b.classList.add('done');
+    var z = b.querySelector('.z'), en = b.querySelector('.e');
+    if (z) z.textContent = '已复制';
+    if (en) en.textContent = 'Copied';
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(done).catch(function () {});
+  } else {
+    done();
+  }
+});
+
+if ('IntersectionObserver' in window) {
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+} else {
+  document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+}
+</script>
+</body>
+</html>

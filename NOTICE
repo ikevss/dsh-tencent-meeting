@@ -1,0 +1,88 @@
+dsh-tencent-meeting
+Copyright (c) 2026 ikevss
+
+This product includes software and assets developed by third parties. The
+following notices are provided for attribution and compliance.
+
+--------------------------------------------------------------------------------
+1. Tencent Meeting CLI
+--------------------------------------------------------------------------------
+
+Name:      @tencentcloud/tmeet
+Owner:     Tencent Technology (Shenzhen) Company Limited
+License:   Proprietary. Governed by the Tencent Meeting terms of service and
+           the licence shipped with the npm package.
+URL:       https://www.npmjs.com/package/@tencentcloud/tmeet
+
+This plugin does not bundle, vendor, modify or redistribute the Tencent Meeting
+CLI. On first use it runs `npm i -g @tencentcloud/tmeet@1.1.0` for you (turn this
+off in settings to install it yourself). It invokes a copy that is installed on
+your own machine through the official npm package, and it relays the OAuth
+device-code authorisation link that the CLI prints.
+
+All meeting data displayed by this plugin originates from the Tencent Meeting
+API through that CLI. "Tencent Meeting" and "腾讯会议" are trademarks of
+Tencent. This project is not affiliated with, endorsed by or sponsored by
+Tencent.
+
+--------------------------------------------------------------------------------
+2. UI component style
+--------------------------------------------------------------------------------
+
+Name:      shadcn/ui
+Owner:     shadcn
+License:   MIT
+URL:       https://github.com/shadcn-ui/ui
+
+Name:      shadcn-admin
+Owner:     satnating
+License:   MIT
+URL:       https://github.com/satnating/shadcn-admin
+
+The base UI components in src/client/ui/ follow the structural and styling
+conventions of shadcn/ui, and the page composition follows patterns established
+in shadcn-admin. Both are MIT licensed. The implementations in this repository
+are written for DSH's slot and styling model against the --dsw-alias-* design
+tokens; they are derived in structure and style, not copied wholesale.
+
+--------------------------------------------------------------------------------
+3. Runtime dependencies provided by the host
+--------------------------------------------------------------------------------
+
+The following packages are declared as optional peer dependencies and are
+supplied by DeepSeek Harness at runtime. They are not redistributed by this
+plugin.
+
+  @deepseek-ai/cordis         MIT
+  @deepseek-ai/schemastery    MIT
+
+Third-party UI primitives required at build time (Radix UI packages) are MIT
+licensed and are bundled into the client output.
+
+--------------------------------------------------------------------------------
+4. Icons and artwork
+--------------------------------------------------------------------------------
+
+The plugin icon (icon.svg) and every inline SVG icon inside src/client/ are
+original work created for this project. They are released under the MIT licence
+that covers this repository.
+
+No icon from an icon font, no Tencent brand asset, and no third-party
+illustration is included.
+
+--------------------------------------------------------------------------------
+5. Documentation screenshots
+--------------------------------------------------------------------------------
+
+Screenshots under docs/screenshots/ are captured from a real running DeepSeek
+Harness instance with this plugin installed. Meeting titles, participant names
+and meeting codes visible in those screenshots are either test data or have been
+anonymised. Screenshots are released under the same MIT licence as this
+repository.
+
+--------------------------------------------------------------------------------
+6. Full licence text
+--------------------------------------------------------------------------------
+
+This project itself is distributed under the MIT licence. The full text is in
+the LICENSE file at the root of this repository.

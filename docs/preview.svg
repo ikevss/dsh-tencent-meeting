@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300" role="img" aria-label="Tencent Meeting panel beside five post-meeting documents">
+  <rect width="640" height="300" fill="#FAFAFB"/>
+  <g opacity="0.5" stroke="#EDEEF0" stroke-width="1">
+    <path d="M0 75 H640 M0 150 H640 M0 225 H640"/>
+    <path d="M160 0 V300 M320 0 V300 M480 0 V300"/>
+  </g>
+
+  <!-- Panel -->
+  <rect x="36" y="52" width="288" height="196" rx="16" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.5"/>
+  <path d="M36 68 a16 16 0 0 1 16 -16 h256 a16 16 0 0 1 16 16 v20 h-288 z" fill="#0B1220"/>
+  <rect x="52" y="60" width="10" height="10" rx="5" fill="#FFFFFF" opacity="0.85"/>
+  <rect x="70" y="62" width="72" height="6" rx="3" fill="#FFFFFF" opacity="0.55"/>
+
+  <rect x="48" y="98" width="264" height="34" rx="8" fill="#F5A623" opacity="0.16"/>
+  <rect x="58" y="108" width="58" height="6" rx="3" fill="#C47A12"/>
+  <rect x="58" y="119" width="96" height="5" rx="2.5" fill="#D9DDE3"/>
+
+  <rect x="48" y="140" width="264" height="34" rx="8" fill="#FFFFFF" stroke="#EEF0F3" stroke-width="1"/>
+  <rect x="58" y="150" width="58" height="6" rx="3" fill="#9AA3AF"/>
+  <rect x="58" y="161" width="96" height="5" rx="2.5" fill="#E3E6EB"/>
+
+  <rect x="48" y="182" width="264" height="34" rx="8" fill="#FFFFFF" stroke="#EEF0F3" stroke-width="1"/>
+  <rect x="58" y="192" width="58" height="6" rx="3" fill="#9AA3AF"/>
+  <rect x="58" y="203" width="96" height="5" rx="2.5" fill="#E3E6EB"/>
+
+  <rect x="48" y="224" width="88" height="5" rx="2.5" fill="#D9DDE3"/>
+
+  <!-- Documents -->
+  <rect x="352" y="52" width="252" height="196" rx="16" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.5"/>
+  <rect x="368" y="70" width="34" height="10" rx="5" fill="#C47A12"/>
+  <rect x="410" y="68" width="96" height="14" rx="4" fill="#0B1220"/>
+
+  <rect x="368" y="100" width="220" height="26" rx="6" fill="#F4F5F7"/>
+  <rect x="368" y="108" width="70" height="10" rx="5" fill="#C7CDD6"/>
+
+  <rect x="368" y="136" width="220" height="26" rx="6" fill="#F4F5F7"/>
+  <rect x="368" y="144" width="96" height="10" rx="5" fill="#C7CDD6"/>
+
+  <rect x="368" y="172" width="220" height="26" rx="6" fill="#F4F5F7"/>
+  <rect x="368" y="180" width="56" height="10" rx="5" fill="#C7CDD6"/>
+
+  <circle cx="392" cy="222" r="5" fill="#F5A623"/>
+  <circle cx="420" cy="222" r="5" fill="#C7CDD6"/>
+  <circle cx="448" cy="222" r="5" fill="#C7CDD6"/>
+  <circle cx="476" cy="222" r="5" fill="#C7CDD6"/>
+  <circle cx="504" cy="222" r="5" fill="#C7CDD6"/>
+</svg>
