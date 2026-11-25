@@ -15,8 +15,6 @@ export interface Config {
     tmeetBinary: string;
     /** 期望的 CLI 版本（首装/升级用） */
     cliVersion: string;
-    /** 首次使用前自动安装 CLI（默认开；关掉则回到手动点按钮） */
-    autoInstall: boolean;
     /** 单条命令超时（毫秒） */
     requestTimeoutMs: number;
     /** 列表快照有效期（毫秒） */

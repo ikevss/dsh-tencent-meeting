@@ -53,7 +53,7 @@ export const ROUTE_PREFIX = '/tmeet/api'
 
 export interface RouteDeps {
   ctx: Context
-  getConfig: () => { binary: string; timeoutMs: number; expectedVersion: string; autoInstall: boolean }
+  getConfig: () => { binary: string; timeoutMs: number; expectedVersion: string }
 }
 
 /* ── 复盘洞察：本机参与度（只读本地，不打腾讯接口）── */
@@ -261,9 +261,6 @@ function query(url: string): Record<string, string> {
 
 /* ── 安装进度（内存态，不落盘） ── */
 
-/** 自动安装的延迟：避开宿主启动高峰 */
-const AUTO_INSTALL_DELAY_MS = 5_000
-
 let installState: { installing: boolean; lastMessage: string } = { installing: false, lastMessage: '' }
 
 export function installStatus(): { installing: boolean; lastMessage: string } {
@@ -305,25 +302,6 @@ export function registerRoutes(deps: RouteDeps): () => void {
     message: t.message,
     at: t.at
   })
-
-  // 自动安装：插件加载后延迟检查一次，缺组件（或版本太低）就后台装好，
-  // 用户打开面板时直接可用。延迟是为了不拖慢宿主启动；失败不打扰人，
-  // 面板里仍保留手动入口与失败原因。
-  const autoInstallTimer = setTimeout(() => {
-    void (async () => {
-      try {
-        const cfg = deps.getConfig()
-        if (!cfg.autoInstall) return
-        const st = await readStatus({ binary: cfg.binary, expectedVersion: cfg.expectedVersion, timeoutMs: cfg.timeoutMs })
-        if (st.state === 'not-installed' || st.state === 'version-mismatch') {
-          await doInstall(cfg.expectedVersion)
-        }
-      } catch {
-        /* 自动安装失败不阻塞任何人：下次进面板走手动流程 */
-      }
-    })()
-  }, AUTO_INSTALL_DELAY_MS)
-  autoInstallTimer.unref?.()
 
   // 实时事件依赖：ctx 每次取配置，广播只发 meetingId + 事件类型（不含个人信息）
   const eventDeps: EventDeps = {
@@ -1226,7 +1204,6 @@ export function registerRoutes(deps: RouteDeps): () => void {
 
   const dispose = webServer.register({ kind: 'prefix', path: ROUTE_PREFIX, handler })
   return () => {
-    clearTimeout(autoInstallTimer)
     disposeAuth()
     void stopEventConsumers()
     try {

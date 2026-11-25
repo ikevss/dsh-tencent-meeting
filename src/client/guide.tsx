@@ -69,8 +69,7 @@ function NotInstalled(props: GuideProps): React.ReactElement {
   const progress = useInstallProgress(installing)
 
   React.useEffect(() => {
-    // 自动安装是后台跑的：它失败时面板可能刚打开，得把失败原因取回来显示，
-    // 否则用户只看到一个按钮，不知道刚才发生了什么。
+    // 安装只能由这次点击触发；这里取回上次结果，是为了让用户看到上一次为什么没装成。
     let alive = true
     void api
       .getInstallStatus()

@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Tencent Meeting",
-    "description": "Manage Tencent Meeting from DeepSeek Harness: browse and search meetings, read transcripts and smart minutes, create, update and cancel with a preview first, and turn a finished meeting into five documents using your own DSH model. Open it from the Tencent Meeting icon in the left sidebar, or from the matching section in settings; fourteen tm_* tools are also available in conversations. Installing the plugin does not install the Tencent CLI: on first use it runs npm i -g @tencentcloud/tmeet@1.1.0 for you (set autoInstall to false to install it yourself). Generating a document sends that meeting's transcript or smart minutes to the model provider you configured in DSH. Turning the plugin off removes its panel, tools and skills; documents already generated stay on this machine.",
+    "description": "Manage Tencent Meeting from DeepSeek Harness: browse and search meetings, read transcripts and smart minutes, create, update and cancel with a preview first, and turn a finished meeting into five documents using your own DSH model. Open it from the Tencent Meeting icon in the left sidebar, or from the matching section in settings; fourteen tm_* tools are also available in conversations. Installing the plugin does not install the Tencent CLI: the panel shows one Install meeting component action, and only after you press it does the plugin run npm i -g @tencentcloud/tmeet@1.1.0. Nothing is installed without that click. Generating a document sends that meeting's transcript or smart minutes to the model provider you configured in DSH. Turning the plugin off removes its panel, tools and skills; documents already generated stay on this machine.",
     "detail": "docs/DETAIL.md"
   }
 }

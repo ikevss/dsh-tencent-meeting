@@ -23,8 +23,6 @@ export interface Config {
   tmeetBinary: string
   /** 期望的 CLI 版本（首装/升级用） */
   cliVersion: string
-  /** 首次使用前自动安装 CLI（默认开；关掉则回到手动点按钮） */
-  autoInstall: boolean
   /** 单条命令超时（毫秒） */
   requestTimeoutMs: number
   /** 列表快照有效期（毫秒） */
@@ -41,7 +39,6 @@ export interface Config {
 export const Config = z.object({
   tmeetBinary: z.string().default('').description('腾讯会议组件路径，留空自动查找'),
   cliVersion: z.string().default(EXPECTED_VERSION).description('期望的组件版本'),
-  autoInstall: z.boolean().default(true).description('首次使用前自动下载安装腾讯会议组件（关闭后需手动点「安装会议组件」）'),
   requestTimeoutMs: z.number().default(20000).description('单条命令超时（毫秒）'),
   listCacheTtlMs: z.number().default(600000).description('会议列表快照有效期（毫秒）'),
   dailyCallBudget: z.number().default(60).description('本地粗略计数的单位（只计数不拦截，满了自动清零；腾讯真实每日上限是黑盒）')
@@ -63,7 +60,6 @@ export function apply(ctx: Context, rawConfig: any): void {
   const readCfg = (): Config => ({
     tmeetBinary: String(unwrap(rawConfig?.tmeetBinary) ?? ''),
     cliVersion: String(unwrap(rawConfig?.cliVersion) ?? EXPECTED_VERSION) || EXPECTED_VERSION,
-    autoInstall: Boolean(unwrap(rawConfig?.autoInstall) ?? true),
     requestTimeoutMs: Number(unwrap(rawConfig?.requestTimeoutMs)) || 20000,
     listCacheTtlMs: Number(unwrap(rawConfig?.listCacheTtlMs)) || 600000,
     dailyCallBudget: Number(unwrap(rawConfig?.dailyCallBudget)) || 60
@@ -95,8 +91,7 @@ export function apply(ctx: Context, rawConfig: any): void {
         return {
           binary: c.tmeetBinary,
           timeoutMs: c.requestTimeoutMs,
-          expectedVersion: c.cliVersion,
-          autoInstall: c.autoInstall
+          expectedVersion: c.cliVersion
         }
       }
     })

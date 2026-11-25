@@ -15,8 +15,9 @@ License:   Proprietary. Governed by the Tencent Meeting terms of service and
 URL:       https://www.npmjs.com/package/@tencentcloud/tmeet
 
 This plugin does not bundle, vendor, modify or redistribute the Tencent Meeting
-CLI. On first use it runs `npm i -g @tencentcloud/tmeet@1.1.0` for you (turn this
-off in settings to install it yourself). It invokes a copy that is installed on
+CLI. It offers one Install meeting component action in its panel; only after you
+press it does the plugin run `npm i -g @tencentcloud/tmeet@1.1.0` on your behalf.
+Nothing is installed without that click. It invokes a copy that is installed on
 your own machine through the official npm package, and it relays the OAuth
 device-code authorisation link that the CLI prints.
 

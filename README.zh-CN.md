@@ -52,7 +52,7 @@
 | Node.js | `22` | 与 DSH 宿主运行时一致。 |
 | 腾讯会议 CLI | `1.1.0` | 即 `@tencentcloud/tmeet`。`1.1.0` 是第一个带 `record content` 的版本，待办产出依赖它。 |
 
-插件不随包分发腾讯会议 CLI。首次使用时它会替你全局安装 `@tencentcloud/tmeet@1.1.0`，进度显示在面板里；也可以自己提前装好，或在设置里关掉自动安装。它不携带 `cordis`、`schemastery`、`dsh-tools` 的副本，这几个都通过 `peerDependencies` 使用宿主提供的版本。
+插件不随包分发腾讯会议 CLI。缺组件时面板会显示引导页，点一次「安装会议组件」就会执行 `npm i -g @tencentcloud/tmeet@1.1.0` 并显示进度；也可以自己提前装好。它不携带 `cordis`、`schemastery`、`dsh-tools` 的副本，这几个都通过 `peerDependencies` 使用宿主提供的版本。
 
 ### 版本兼容
 
@@ -64,7 +64,7 @@
 
 **支持的系统。** Windows 10/11 x64、macOS 12+（Apple Silicon 与 Intel）、Linux x64 与 ARM64。二进制是按 npm 包里的真实平台文件名查找的，支持的系统一定能找到，不会被误报成「没装」。
 
-**全局安装权限。** 首次安装要写入 npm 全局目录。macOS / Linux 上如果是 `/usr/local` 这类系统目录，通常需要 sudo；装不上就自己执行一次 `@tencentcloud/tmeet@1.1.0`，插件会找到它。想完全手动管理 CLI，把 `autoInstall` 设为 `false`。
+**全局安装权限。** 装组件要写入 npm 全局目录。macOS / Linux 上如果是 `/usr/local` 这类系统目录，通常需要 sudo；装不上就自己执行一次 `@tencentcloud/tmeet@1.1.0`，插件会找到它。任何安装都从你在面板里点一下开始，插件不会自己动手。
 
 ## 安装
 
@@ -103,7 +103,6 @@ tmeet --version
 | --- | --- | --- |
 | `tmeetBinary` | `''` | 显式指定 `tmeet` 可执行文件路径。空表示自动查找：配置项、包内 `dist`、`PATH`、npm 全局前缀，依次尝试。 |
 | `cliVersion` | `'1.1.0'` | 安装或升级时要装到的 CLI 版本。 |
-| `autoInstall` | `true` | 首次使用前自动装 CLI。关掉就自己装 `@tencentcloud/tmeet`。 |
 | `requestTimeoutMs` | `20000` | 单条 CLI 命令超时，单位毫秒。 |
 | `listCacheTtlMs` | `600000` | 会议列表快照有效期，单位毫秒。 |
 | `outputSkills` | `['insight', 'minutes-company', 'minutes-investor', 'review', 'qa']` | 注册哪几份产出技能。 |
@@ -158,7 +157,7 @@ DSH 设置里的「腾讯会议」一节会把用户偏好写到 `$DSH_HOME/plug
 - **不碰凭证。** 插件不读、不复制、不打印 `~/.tmeet` 下任何文件。登录一律以子进程运行 `tmeet auth login`，只转发它打印的授权链接。
 - **加载时不启进程。** `apply()` 只注册路由、工具、技能与插槽。在工具调用、HTTP 请求或用户点击发生之前，不启动任何子进程。
 - **写操作先预览。** 建会、改会、取消、邀请、改参会人、单场录制权限申请、会中控制，都要先渲染预览，`confirm: true` 才提交。
-- **只有一次自动安装，且可拒绝。** 首次使用时若缺组件，插件会执行一次 `npm i -g @tencentcloud/tmeet@1.1.0` 并显示进度；除此之外，不会再未经你操作就装任何东西。把 `autoInstall` 设为 `false`，组件就完全由你自己管理。
+- **不静默安装。** 面板会先问过你：点一次「安装会议组件」，插件才执行 `npm i -g @tencentcloud/tmeet@1.1.0` 并显示进度。没有这一下点击，不会有任何安装动作。
 - **尊重配额。** 腾讯会议 CLI 有日调用上限。列表默认读本地快照；只有你点「同步」或首次进面板时才真取数。详情页不逐行预取。
 - **不把堆栈发给前端。** 任何接口失败都返回 `{ error, code }` 加合适的 4xx 状态码。
 

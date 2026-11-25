@@ -8,6 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.3.1] - 2026-11-25
+
+### Changed
+
+- **全局安装腾讯会议 CLI 改为必须由用户点一次确认才执行**：去掉插件加载后的后台自动安装，缺组件时仍由面板的「安装会议组件」按钮发起，进度与失败原因都在面板里可见。安装会写入系统目录，属于需要明确同意的操作。
+- 移除 `autoInstall` 配置项（已无自动路径），README、NOTICE 与市场文案同步改写。
+
+## [1.3.0] - 2026-11-24
+
+### Added
+
+- 五份会后产出的成品 HTML：导出与「在浏览器打开」共用一套自包含模板（文档头、中文易读排版、来源标记徽标、移动端与打印样式），单文件无外部依赖。已有的产出无需重新生成即可导出。
+
+### Changed
+
+- 产出卡片「更多」的下载入口改为 **导出 HTML** 为主，**导出 Markdown** 降为次要入口（需要再编辑或再生成时用）；面板内阅读与「复制正文」仍给 Markdown 原文。
+
 ## [1.2.0] - 2026-11-24
 
 第一版开源发布。11-13 → 11-22 的界面改动**尚未在重启后的宿主上真机验证**。
@@ -129,7 +146,9 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ikevss/dsh-tencent-meeting/compare/v0.5.0...v1.0.0

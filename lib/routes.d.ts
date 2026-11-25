@@ -9,7 +9,6 @@ export interface RouteDeps {
         binary: string;
         timeoutMs: number;
         expectedVersion: string;
-        autoInstall: boolean;
     };
 }
 export declare function installStatus(): {

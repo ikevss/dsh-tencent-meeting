@@ -52,7 +52,7 @@ All tools are registered on the DSH tool bus. Read-only tools declare `isConcurr
 | Node.js | `22` | Matches the DSH host runtime. |
 | Tencent Meeting CLI | `1.1.0` | `@tencentcloud/tmeet`. Version `1.1.0` is the first release with `record content`, which the todos output depends on. |
 
-The plugin does not redistribute the Tencent Meeting CLI. On first use it installs `@tencentcloud/tmeet@1.1.0` globally for you and shows progress in the panel; you can also install it yourself beforehand, or turn auto-install off in settings. It carries no copy of `cordis`, `schemastery` or `dsh-tools`; those come from the host through `peerDependencies`.
+The plugin does not redistribute the Tencent Meeting CLI. When the component is missing the panel shows an **Install meeting component** button; press it once and the plugin runs `npm i -g @tencentcloud/tmeet@1.1.0` with progress shown. Nothing is installed without that click, and you can always install it yourself beforehand. It carries no copy of `cordis`, `schemastery` or `dsh-tools`; those come from the host through `peerDependencies`.
 
 ### Version compatibility
 
@@ -64,7 +64,7 @@ The plugin does not redistribute the Tencent Meeting CLI. On first use it instal
 
 **Systems.** Windows 10/11 x64, macOS 12+ (Apple Silicon and Intel), Linux x64 and ARM64. The binary is located inside the installed npm package by its real platform filename, so a supported system is found rather than reported missing.
 
-**Global install permission.** The first-run install writes to the npm global prefix. On macOS and Linux a system prefix such as `/usr/local` usually needs sudo; if that fails, install `@tencentcloud/tmeet@1.1.0` yourself once and the plugin finds it. Set `autoInstall: false` to always manage the CLI by hand.
+**Global install permission.** Installing the component writes to the npm global prefix. On macOS and Linux a system prefix such as `/usr/local` usually needs sudo; if that fails, install `@tencentcloud/tmeet@1.1.0` yourself once and the plugin finds it. The install always starts from a click in the panel — the plugin never installs anything on its own.
 
 ## Install
 
@@ -103,7 +103,6 @@ Declared in `src/index.ts` as a Zod `Config` object. Every field has a default, 
 | --- | --- | --- |
 | `tmeetBinary` | `''` | Explicit path to the `tmeet` executable. Empty means auto-discover: config, then package `dist`, then `PATH`, then the npm global prefix. |
 | `cliVersion` | `'1.1.0'` | CLI version to install or upgrade to when installing. |
-| `autoInstall` | `true` | Install the CLI automatically before first use. Turn it off to install `@tencentcloud/tmeet` yourself. |
 | `requestTimeoutMs` | `20000` | Timeout for a single CLI command, in milliseconds. |
 | `listCacheTtlMs` | `600000` | Lifetime of the meeting-list snapshot, in milliseconds. |
 | `outputSkills` | `['insight', 'minutes-company', 'minutes-investor', 'review', 'qa']` | Which of the five output skills are registered. |
@@ -158,7 +157,7 @@ Source material is the verbatim transcript when available, and the Tencent Meeti
 - **No credential access.** The plugin does not read, copy or print any file under `~/.tmeet`. Login always runs `tmeet auth login` as a subprocess; only the printed authorisation link is forwarded.
 - **Nothing spawns at load.** `apply()` registers routes, tools, skills and slots. Zero child processes start until a tool call, an HTTP request or a click happens.
 - **Writes are preview-first.** Create, update, cancel, invite, participant edits, per-recording permission requests and in-meeting control all require `confirm: true` after a preview is rendered.
-- **One automatic install, and you can refuse it.** If the CLI is missing, first use runs `npm i -g @tencentcloud/tmeet@1.1.0` once and shows progress; nothing else is ever installed without an action from you. Set `autoInstall: false` to keep the component entirely under your control.
+- **Nothing is installed silently.** The panel asks before anything reaches your machine: press **Install meeting component** once and the plugin runs `npm i -g @tencentcloud/tmeet@1.1.0`, showing progress. Without that click, no install is attempted.
 - **Quota respected.** The Tencent Meeting CLI has a daily call cap. The list reads a local snapshot by default; live data is fetched only when you press **Sync** or open the panel for the first time. The detail page does not prefetch per row.
 - **No stack traces over the wire.** Every API failure returns `{ error, code }` with an appropriate 4xx status.
 

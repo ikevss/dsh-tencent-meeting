@@ -1594,21 +1594,28 @@ function OutputDoc(props: {
 
   const outText = out?.text ?? ''
 
+  /** 成品 HTML（导出与「在浏览器打开」共用同一份，避免两处样式不一致） */
+  const docHtml = React.useMemo(
+    () => markdownToHtmlDocument(out?.text ?? '', OUTPUT_LABELS[kind], { generatedAt: out?.generatedAt }),
+    [out, kind]
+  )
+
   /** 在浏览器新标签里打开渲染后的成品（自包含 HTML） */
   const openInBrowser = (): void => {
-    const doc = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${OUTPUT_LABELS[kind]}</title><style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7;max-width:820px;margin:24px auto;padding:0 20px;color:#111827}h1{font-size:24px}h2{font-size:18px;margin-top:28px}blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid #cbd5e1;color:#4b5563}ul{padding-left:22px}</style></head><body>${html}</body></html>`
-    const url = URL.createObjectURL(new Blob([doc], { type: 'text/html' }))
+    const url = URL.createObjectURL(new Blob([docHtml], { type: 'text/html;charset=utf-8' }))
     window.open(url, '_blank', 'noopener,noreferrer')
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
-  /** 导出 Markdown 文件 */
-  const download = (): void => {
-    const url = URL.createObjectURL(new Blob([outText], { type: 'text/markdown' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${OUTPUT_LABELS[kind]}.md`
-    a.click()
-    URL.revokeObjectURL(url)
+  /** 导出 HTML 成品 */
+  const downloadHtml = (): void => {
+    downloadText(`${OUTPUT_LABELS[kind]}.html`, docHtml, 'text/html')
+    props.toast.push('ok', '已导出 HTML（排版后的样子）。')
+  }
+
+  /** 导出 Markdown 原文（次要入口：要再编辑 / 再生成时用） */
+  const downloadMd = (): void => {
+    downloadText(`${OUTPUT_LABELS[kind]}.md`, outText, 'text/markdown')
   }
 
   if (!out) {
@@ -1649,9 +1656,12 @@ function OutputDoc(props: {
             {menuOpen ? (
               <div className="tm-popmenu" role="menu">
                 <button type="button" role="menuitem" className="tm-popmenu-item" onClick={() => { setMenuOpen(false); openInBrowser() }}>
-                  浏览器打开
+                  在浏览器打开
                 </button>
-                <button type="button" role="menuitem" className="tm-popmenu-item" onClick={() => { setMenuOpen(false); download() }}>
+                <button type="button" role="menuitem" className="tm-popmenu-item" onClick={() => { setMenuOpen(false); downloadHtml() }}>
+                  导出 HTML
+                </button>
+                <button type="button" role="menuitem" className="tm-popmenu-item" onClick={() => { setMenuOpen(false); downloadMd() }}>
                   导出 Markdown
                 </button>
                 <button
@@ -1743,9 +1753,12 @@ function downloadText(filename: string, text: string, mime: string): void {
 }
 
 /** 产出排版预览（全屏浮层） */
-function OutputPreview(props: { title: string; text: string; toast: ToastApi; onClose: () => void }): React.ReactElement {
+function OutputPreview(props: { title: string; text: string; generatedAt?: string; toast: ToastApi; onClose: () => void }): React.ReactElement {
   const html = React.useMemo(() => renderMarkdown(props.text), [props.text])
-  const doc = React.useMemo(() => markdownToHtmlDocument(props.text, props.title), [props.text, props.title])
+  const doc = React.useMemo(
+    () => markdownToHtmlDocument(props.text, props.title, { generatedAt: props.generatedAt }),
+    [props.text, props.title, props.generatedAt]
+  )
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') props.onClose()
@@ -2381,6 +2394,7 @@ function OutputsPane(props: {
         <OutputPreview
           title={OUTPUT_LABELS[preview]}
           text={outputs[preview].text}
+          generatedAt={outputs[preview].generatedAt}
           toast={props.toast}
           onClose={() => setPreview(null)}
         />
