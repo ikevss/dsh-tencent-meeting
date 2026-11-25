@@ -48,7 +48,7 @@ All tools are registered on the DSH tool bus. Read-only tools declare `isConcurr
 
 | Component | Minimum | Notes |
 | --- | --- | --- |
-| DSH | `0.2.1` | Both `dsh web` and the desktop build. |
+| DSH | `0.2.1` and up | Verified on `0.2.2-rc.5`, both `dsh web` and the desktop build. |
 | Node.js | `22` | Matches the DSH host runtime. |
 | Tencent Meeting CLI | `1.1.0` | `@tencentcloud/tmeet`. Version `1.1.0` is the first release with `record content`, which the todos output depends on. |
 
@@ -58,7 +58,7 @@ The plugin does not redistribute the Tencent Meeting CLI. When the component is 
 
 | Layer | Requirement | What breaks when it is older |
 | --- | --- | --- |
-| DSH | `0.2.1` | The bundle manifest, tool bus and client slots this plugin uses do not exist. |
+| DSH | `0.2.1` | The bundle manifest, tool bus and client slots this plugin uses do not exist below it. Current release `0.2.2-rc.5` is the tested target. |
 | Node.js | `22` | Matching the host runtime; the plugin spawns the CLI through Node. |
 | Tencent Meeting CLI | `1.1.0` | Reading recording content, searching meetings and todos need `record content` / `meeting search`, added in `1.1.0`. Older versions get a "needs upgrade" state, not silent failures. |
 
