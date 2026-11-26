@@ -170,6 +170,14 @@ export function App(props: { nav?: NavLike | null }): React.ReactElement {
 
   // 实时同步：进入面板即订阅；推送只是触发器，收到后自动真同步，用户不用点
   const [liveEvent, setLiveEvent] = React.useState<api.PushEvent | null>(null)
+  /** 同步状态浮层：只在点击「同步」时展开，6 秒后自动收起（不再 hover 误遮挡） */
+  const [syncPop, setSyncPop] = React.useState(false)
+  const popTimer = React.useRef<number | null>(null)
+  React.useEffect(() => {
+    return () => {
+      if (popTimer.current) window.clearTimeout(popTimer.current)
+    }
+  }, [])
   const selectedIdRef = React.useRef(selectedId)
   selectedIdRef.current = selectedId
   // 30 秒内的连续推送合并成一次同步：不然一场会连发 5 个事件就是 10 条接口调用
@@ -468,12 +476,15 @@ export function App(props: { nav?: NavLike | null }): React.ReactElement {
           <div className="tm-right-head">
             {/* 顶栏只留：同步（hover 看上次同步/用量/状态）+ 实时同步小点 + 设置/助手。 */}
             <div className="tm-sync">
-              {/* 同步按钮：hover 才展开「上次同步 / 今日用量 / 实时同步状态」 */}
-              <div className="tm-menu-wrap tm-sync-wrap">
+              {/* 同步按钮：点击才会展开「上次同步 / 实时同步状态」，不再 hover 误遮挡标题 */}
+              <div className={`tm-menu-wrap tm-sync-wrap${syncPop ? ' is-open' : ''}`}>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => {
+                    setSyncPop(true)
+                    if (popTimer.current) window.clearTimeout(popTimer.current)
+                    popTimer.current = window.setTimeout(() => setSyncPop(false), 6000)
                     void meetings.sync().then(() => toast.push('ok', '同步完成。'))
                   }}
                   disabled={meetings.loading}
@@ -481,7 +492,7 @@ export function App(props: { nav?: NavLike | null }): React.ReactElement {
                 >
                   {meetings.loading ? '正在同步…' : '同步'}
                 </Button>
-                <div className="tm-sync-pop" role="tooltip">
+                <div className="tm-sync-pop" role="status">
                   <div className="tm-sync-pop-row">{syncedText}</div>
                   <div className="tm-sync-pop-row">
                     {live.state === 'degraded'
