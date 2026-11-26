@@ -1405,7 +1405,7 @@ function ContentPane(props: {
       (c) => c.text.toLowerCase().includes(q) || (c.speaker ?? '').toLowerCase().includes(q)
     )
   }, [view, filter])
-  const chunks = useReveal(matched, 8)
+  const chunks = useReveal(matched, 25)
 
   if (loading)
     return (
@@ -1701,11 +1701,11 @@ function OutputDoc(props: {
           </div>
         </div>
       </div>
-      <div className="tm-row" style={{ flexWrap: 'wrap', gap: 6 }}>
-        <span className="tm-caption">素材：{out.source === 'transcript' ? '逐字稿' : '纪要'}</span>
-        <span className="tm-caption">模型：{out.model || '跟随默认'}</span>
-        {out.truncated ? <Badge tone="warn" title="素材超过 6 万字被截断">素材已截断</Badge> : null}
-      </div>
+      {out.truncated ? (
+        <div className="tm-row" style={{ flexWrap: 'wrap', gap: 6 }}>
+          <Badge tone="warn" title="素材超过 6 万字被截断">素材已截断</Badge>
+        </div>
+      ) : null}
       <div className="tm-outview-page tm-output-rendered" dangerouslySetInnerHTML={{ __html: html }} />
 
       <Dialog
@@ -2043,10 +2043,8 @@ function ReviewCard(props: {
         </div>
       ) : props.out ? (
         <>
-          <div className="tm-row" style={{ flexWrap: 'wrap', gap: 6 }}>
-            <span className="tm-caption">类型：{typeName}</span>
-            <span className="tm-caption">素材：{props.out.source === 'transcript' ? '逐字稿' : '纪要'}</span>
-            <span className="tm-caption">模型：{props.out.model || '跟随默认'}</span>
+          <div className="tm-output-metabar">
+            <span>类型：{typeName}</span>
             {props.out.reviewDegraded ? <Badge tone="warn" title="素材不足，已按要点版生成">降级版</Badge> : null}
             {props.out.truncated ? <Badge tone="warn" title="素材超过 6 万字被截断">素材已截断</Badge> : null}
           </div>
