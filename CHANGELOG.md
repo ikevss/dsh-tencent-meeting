@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.0] - 2026-11-26
+
+### Fixed
+
+- **建会弹窗的「提交」此前直连 `confirm:true`**：第②步「确认」永远不出现，与工具层的两阶段和对外承诺都不一致。现在「下一步」先生成预览，再点「确认创建」才提交。
+- 逐字稿／纪要预热失败被静默忽略，补注释说明这是有意为之（页签自身会重新请求并显示错误）。
+
+### Added
+
+- **设置页可升级组件**：显示当前 CLI 版本，npm 上有更新时给出「升级组件」按钮；点击后才执行升级并显示进度。后端新增只读接口 `GET /setup/cli-version`（查 npm 最新版，内存缓存 10 分钟，查不到就静默不显示入口）。
+
 ## [1.3.4] - 2026-11-26
 
 ### Fixed
@@ -165,7 +176,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.4...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.4...v1.4.0
 [1.3.4]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.1...v1.3.2
