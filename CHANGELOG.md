@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.1] - 2026-11-26
+
+### Fixed
+
+- **建会弹窗的说明与两步流程矛盾**：按钮已是「下一步 / 确认创建」，说明却还写着「点『提交』直接创建」，现已改成「点『下一步』先出预览，确认后才创建」。
+
+### Changed
+
+> 以下为视觉层调整，依据 UI 视觉审查报告的 P0/P1 清单（未改任何交互逻辑）。
+
+- **行长**：会后产出正文由通栏 1140px 收到 `max-width: 860px`，长文不再一行读到视口边缘。
+- **「当前项」语义收敛**：产出 chip 选中态去掉灰底改用宿主交互色、字重 600→500；chip 高度统一到 30px 档。
+- **元信息去重**：产出卡头删掉与正文重复的「素材 / 模型」，只保留「素材已截断」徽标；正文元信息条改为令牌底色块。
+- **入口可发现性**：「更多选项」补 chevron 并在展开时旋转；同步 hover 浮层改为右对齐，不再压住下方会议标题。
+- **长列表效率**：逐字稿每次展开从 8 段提到 25 段，展开后显示「已加载 N/M 段」。
+
 ## [1.4.0] - 2026-11-26
 
 ### Fixed
@@ -176,7 +192,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.4...v1.4.0
 [1.3.4]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.3.2...v1.3.3
