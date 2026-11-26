@@ -286,8 +286,8 @@ export function CreateDialog(props: CreateDialogProps): React.ReactElement {
             {stage === 'form' ? (
               <>
                 <Button onClick={() => props.onOpenChange(false)}>取消</Button>
-                <Button variant="primary" onClick={() => void doCreate()} disabled={busy}>
-                  {busy ? '正在创建…' : '提交'}
+                <Button variant="primary" onClick={() => void goPreview()} disabled={busy}>
+                  {busy ? '正在生成预览…' : '下一步'}
                 </Button>
               </>
             ) : (
