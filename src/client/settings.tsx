@@ -31,6 +31,10 @@ export function SettingsView(props: SettingsProps): React.ReactElement {
   const [clearing, setClearing] = React.useState(false)
   /** 组件实际状态：路径是部署配置，只能读不能在这里改 */
   const [status, setStatus] = React.useState<PluginStatus | null>(null)
+  /** npm 上的最新版本；查不到为 null，此时不显示升级入口 */
+  const [latest, setLatest] = React.useState<string | null>(null)
+  const [upgrading, setUpgrading] = React.useState(false)
+  const [upgradeError, setUpgradeError] = React.useState('')
 
   const load = React.useCallback(async () => {
     setLoading(true)
@@ -44,6 +48,13 @@ export function SettingsView(props: SettingsProps): React.ReactElement {
       setLoadError(errorText(e))
     } finally {
       setLoading(false)
+    }
+    // 最新版本单独取：它只影响「要不要显示升级」，失败不该拖累整页
+    try {
+      const v = await api.getCliLatestVersion()
+      setLatest(v.latest)
+    } catch {
+      setLatest(null)
     }
   }, [])
 
@@ -68,6 +79,29 @@ export function SettingsView(props: SettingsProps): React.ReactElement {
       setSaving(false)
     }
   }
+
+  /** 升级组件：同样只在用户点这一下之后才写系统目录 */
+  const upgrade = async (): Promise<void> => {
+    if (!latest) return
+    setUpgradeError('')
+    setUpgrading(true)
+    try {
+      const r = await api.installCli(latest)
+      if (!r.ok) {
+        setUpgradeError(r.message || '升级没成功，可以按下面的命令自己升一次。')
+        return
+      }
+      props.toast.push('ok', r.message || `已升级到 ${latest}。`)
+      await load()
+    } catch (e) {
+      setUpgradeError(errorText(e))
+    } finally {
+      setUpgrading(false)
+    }
+  }
+
+  const installedVersion = status?.version?.trim() ? status.version.trim() : ''
+  const newer = latest && installedVersion && latest !== installedVersion ? latest : null
 
   if (loading && !prefs) return <LoadingRow text="正在读取设置…" />
 
@@ -265,9 +299,24 @@ export function SettingsView(props: SettingsProps): React.ReactElement {
               }
             ]}
           />
+          {newer ? (
+            <div className="tm-row" style={{ justifyContent: 'space-between', gap: 8 }}>
+              <span className="tm-hint" style={{ margin: 0 }}>
+                有新版本可用：{newer}
+              </span>
+              <Button size="sm" variant="subtle" onClick={() => void upgrade()} disabled={upgrading}>
+                <Refresh size={13} />
+                {upgrading ? '正在升级…' : '升级组件'}
+              </Button>
+            </div>
+          ) : null}
+          {upgradeError ? (
+            <Banner tone="err" icon={<Alert size={14} />}>
+              {upgradeError}
+            </Banner>
+          ) : null}
           <p className="tm-hint">
-            组件路径由部署决定，不能在这里改：要换路径或升级，请改插件的 cordis.patch.yml
-            再重启插件。想换登录账号，回「腾讯会议」面板，那里有对应的按钮与进度提示。
+            组件路径由部署决定，不能在这里改：要换路径，请改插件的 cordis.patch.yml 再重启插件。想换登录账号，回「腾讯会议」面板，那里有对应的按钮与进度提示。
           </p>
         </div>
       </Card>
