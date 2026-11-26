@@ -464,18 +464,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 语义徽标：底色用会跟主题翻转的「三级淡底」，文字一律主文字色，语义只靠左边一个点做冗余。
+/* 语义徽标：底色用会跟主题翻转的「三级淡底」，文字一律主文字色，不再额外挂小圆点。
    原来把 state-*-secondary 当底色、state-*-primary 当文字，两个都是亮色实心
    （#4ed17e 压 #22c55e），浅色主题下对比度只有 1.3:1，深色主题更是绿上叠绿。 */
-.tm-badge.is-ok::before,
-.tm-badge.is-warn::before,
-.tm-badge.is-err::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  flex: none;
-}
 
 .tm-badge.is-muted {
   background: var(--dsw-alias-interactive-bg-hover, rgba(38, 49, 72, 0.06));
@@ -492,26 +483,14 @@
   color: var(--dsw-alias-label-primary, #1f2937);
 }
 
-.tm-badge.is-ok::before {
-  background: var(--dsw-alias-state-success-primary, #22c55e);
-}
-
 .tm-badge.is-warn {
   background: var(--dsw-alias-state-warn-tertiary, #fef5e7);
   color: var(--dsw-alias-label-primary, #1f2937);
 }
 
-.tm-badge.is-warn::before {
-  background: var(--dsw-alias-state-warn-primary, #f59e0b);
-}
-
 .tm-badge.is-err {
   background: color-mix(in srgb, var(--dsw-alias-state-error-primary, #dc2626) 12%, transparent);
   color: var(--dsw-alias-label-primary, #1f2937);
-}
-
-.tm-badge.is-err::before {
-  background: var(--dsw-alias-state-error-primary, #dc2626);
 }
 
 /* ── 提示条 ── */
