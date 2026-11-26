@@ -267,6 +267,35 @@ export function installStatus(): { installing: boolean; lastMessage: string } {
   return { ...installState }
 }
 
+/* ── 最新版本探测（只读，失败静默） ── */
+
+/**
+ * 查 npm 上 @tencentcloud/tmeet 的最新版本，用于设置页提示「可升级」。
+ * 内存缓存 10 分钟；查不到就返回 null，界面不显示升级入口——不打扰人。
+ */
+let latestCache: { at: number; version: string | null } = { at: 0, version: null }
+async function fetchLatestCliVersion(): Promise<string | null> {
+  if (Date.now() - latestCache.at < 10 * 60_000) return latestCache.version
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 5000)
+  try {
+    const res = await fetch('https://registry.npmjs.org/@tencentcloud/tmeet/latest', {
+      signal: ctrl.signal,
+      headers: { accept: 'application/json' }
+    })
+    if (!res.ok) throw new Error(`http ${res.status}`)
+    const data = (await res.json()) as { version?: unknown }
+    const version = typeof data.version === 'string' && data.version.trim() ? data.version.trim() : null
+    latestCache = { at: Date.now(), version }
+    return version
+  } catch {
+    // 没网、被墙、限流：沿用上次结果，没有就当作没有新版
+    return latestCache.version
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 async function doInstall(version?: string): Promise<{ ok: boolean; message: string }> {
   if (installState.installing) return { ok: false, message: '已经在装了，请稍等。' }
   installState = { installing: true, lastMessage: '正在安装会议组件…' }
@@ -407,6 +436,11 @@ export function registerRoutes(deps: RouteDeps): () => void {
         return
       }
 
+      if (method === 'GET' && path === '/setup/cli-version') {
+        send(res, 200, { latest: await fetchLatestCliVersion(), at: Date.now() })
+        return
+      }
+
       // ── 安装 ──
       if (method === 'GET' && path === '/setup/install-status') {
         send(res, 200, installStatus())
@@ -418,7 +452,8 @@ export function registerRoutes(deps: RouteDeps): () => void {
           fail(res, 400, '安装需要在界面上点一次确认。', 'confirm-required')
           return
         }
-        const r = await doInstall()
+        const wanted = typeof body.version === 'string' && body.version.trim() ? body.version.trim() : undefined
+        const r = await doInstall(wanted)
         send(res, r.ok ? 200 : 500, r)
         return
       }
