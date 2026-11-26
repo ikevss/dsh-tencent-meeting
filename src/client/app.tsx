@@ -593,12 +593,11 @@ function MeetingRow(props: {
       aria-current={active || undefined}
       aria-label={`${m.subject}，${meta}`}
     >
-      <span className={`tm-led${tone === 'live' ? ' is-live' : ''}`} aria-hidden="true" />
       <span className="tm-item-text tm-grow">
         <span className="tm-item-name">{m.subject}</span>
         <span className="tm-item-meta">
           <span>{meta}</span>
-          {m.hasTranscript ? <Badge tone="ok">有转写</Badge> : null}
+          {m.hasTranscript ? <Badge tone="brand">有转写</Badge> : null}
           {m.recordsTotal ? <span>录制 {m.recordsTotal}</span> : null}
         </span>
       </span>
