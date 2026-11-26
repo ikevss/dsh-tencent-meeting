@@ -8,10 +8,9 @@
 import * as React from 'react'
 import * as RDialog from '@radix-ui/react-dialog'
 import * as RTabs from '@radix-ui/react-tabs'
-import * as RSelect from '@radix-ui/react-select'
 import * as RMenu from '@radix-ui/react-dropdown-menu'
 import * as RSwitch from '@radix-ui/react-switch'
-import { Check, ChevronDown, X } from './icons'
+import { ChevronDown, X } from './icons'
 
 /* ── Dialog ── */
 
@@ -116,6 +115,12 @@ export interface SelectOption {
   disabled?: boolean
 }
 
+/**
+ * 原生 select：设置页三处下拉统一用它。
+ * 原因：Radix Select 靠 pointerdown 打开，个别桌面宿主的 webview 会把这类事件吞掉，
+ * 表现为「点了没反应」；原生控件走系统弹层，不存在这个问题。
+ * 选项很少（供应商 / 模型 / 预设），原生控件的可用性更好。
+ */
 export function Select(props: {
   value: string
   onValueChange: (v: string) => void
@@ -125,36 +130,30 @@ export function Select(props: {
   ariaLabel: string
   id?: string
 }): React.ReactElement {
-  const current = props.options.find((o) => o.value === props.value)
+  const hasValue = props.options.some((o) => o.value === props.value)
   return (
-    <RSelect.Root value={props.value} onValueChange={props.onValueChange} disabled={props.disabled}>
-      <RSelect.Trigger className="tm-sel-trigger" aria-label={props.ariaLabel} id={props.id}>
-        <span className="tm-sel-value">
-          <RSelect.Value placeholder={props.placeholder ?? '请选择'}>{current ? current.label : undefined}</RSelect.Value>
-        </span>
-        <RSelect.Icon>
-          <ChevronDown size={13} />
-        </RSelect.Icon>
-      </RSelect.Trigger>
-      <RSelect.Portal>
-        <RSelect.Content className="tm-sel-content" position="popper" sideOffset={4}>
-          <RSelect.Viewport className="tm-sel-viewport">
-            {props.options.map((o) => (
-              <RSelect.Item key={o.value} value={o.value} disabled={o.disabled} className="tm-sel-item">
-                <span style={{ width: 12, display: 'inline-flex', flex: 'none' }}>
-                  <RSelect.ItemIndicator>
-                    <Check size={12} />
-                  </RSelect.ItemIndicator>
-                </span>
-                <RSelect.ItemText>
-                  <span className="tm-sel-item-text">{o.label}</span>
-                </RSelect.ItemText>
-              </RSelect.Item>
-            ))}
-          </RSelect.Viewport>
-        </RSelect.Content>
-      </RSelect.Portal>
-    </RSelect.Root>
+    <span className="tm-sel-wrap">
+      <select
+        id={props.id}
+        className="tm-sel-trigger"
+        aria-label={props.ariaLabel}
+        disabled={props.disabled}
+        value={hasValue ? props.value : ''}
+        onChange={(e) => props.onValueChange(e.target.value)}
+      >
+        <option value="" disabled>
+          {props.placeholder ?? '请选择'}
+        </option>
+        {props.options.map((o) => (
+          <option key={o.value} value={o.value} disabled={o.disabled}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <span className="tm-sel-arrow" aria-hidden="true">
+        <ChevronDown size={13} />
+      </span>
+    </span>
   )
 }
 
