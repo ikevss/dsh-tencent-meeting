@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.8] - 2026-11-26
+
+### Changed
+
+- **徽标配色并入主色体系**：「有转写」「有逐字稿」原本用绿色系（淡绿底 + 绿点），现改为品牌色系（与「有回放」「本机粘贴」同一档），全插件的状态标记不再各说各话。
+- **去掉两处小圆点**：① 徽标左侧的状态圆点（ok / warn / err 三种都去掉）；② 会议列表行首的状态圆点。列表信息改由时间与文字承担，画面更干净。
+
 ## [1.4.7] - 2026-11-26
 
 ### Fixed
@@ -229,7 +236,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.7...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.8...HEAD
+[1.4.8]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.7...v1.4.8
 [1.4.7]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.6...v1.4.7
 [1.4.6]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.5...v1.4.6
 [1.4.5]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.4...v1.4.5
