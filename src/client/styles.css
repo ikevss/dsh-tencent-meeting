@@ -1949,7 +1949,12 @@
   background: var(--dsw-alias-interactive-bg-hover, rgba(38, 49, 72, 0.06));
 }
 
-/* ── 下拉 / 选择（Radix） ── */
+/* ── 下拉（原生 select，设置页用） ── */
+
+.tm-sel-wrap {
+  position: relative;
+  display: block;
+}
 
 .tm-sel-trigger {
   display: inline-flex;
@@ -1959,22 +1964,21 @@
   width: 100%;
   min-width: 0;
   height: 32px;
-  padding: 0 9px;
+  padding: 0 30px 0 9px;
   border: 0.5px solid var(--dsw-alias-border-l2, #d1d5db);
   border-radius: 8px;
   background: var(--dsw-alias-bg-base, #fff);
   color: var(--dsw-alias-label-primary, #1f2937);
   font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
   text-align: left;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .tm-sel-trigger:hover:not(:disabled) {
   background: var(--dsw-alias-interactive-bg-hover, rgba(38, 49, 72, 0.06));
-}
-
-.tm-sel-trigger[data-placeholder] {
-  color: var(--dsw-alias-label-tertiary, #9ca3af);
 }
 
 .tm-sel-trigger:disabled {
@@ -1982,11 +1986,14 @@
   cursor: default;
 }
 
-.tm-sel-value {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.tm-sel-arrow {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: var(--dsw-alias-label-tertiary, #9ca3af);
+  pointer-events: none;
 }
 
 .tm-sel-content {
@@ -2221,8 +2228,6 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: auto;
-  padding: 18px 20px 36px;
 }
 
 .tm-settings-inner {
@@ -2231,6 +2236,14 @@
   display: grid;
   gap: 14px;
   min-width: 0;
+  /* 真正的滚动容器：宿主设置节可能只给固定高度并裁掉溢出，
+     所以这里必须自己接管滚动，否则内容一旦超过就再也拉不动。 */
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px 36px;
 }
 
 .tm-settings-head {
@@ -3017,8 +3030,7 @@
   transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
 }
 
-.tm-sync-wrap:hover .tm-sync-pop,
-.tm-sync-wrap:focus-within .tm-sync-pop {
+.tm-sync-wrap.is-open .tm-sync-pop {
   opacity: 1;
   visibility: visible;
   transform: none;
