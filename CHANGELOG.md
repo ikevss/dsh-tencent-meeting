@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.7] - 2026-11-26
+
+### Fixed
+
+- **设置页可以上下滚动了**（用户反馈）：滚动样式原本挂在 `.tm-settings` 上，但组件实际渲染的是 `.tm-settings-inner`——那是一条从未被使用的死规则，于是内容一超出就被外层裁掉且拉不动。现在由 `.tm-settings-inner` 自己接管滚动（`overflow-y:auto` + `max-height: calc(100vh - 24px)`），内边距一并迁过来。
+
 ## [1.4.6] - 2026-11-26
 
 ### Fixed
@@ -223,7 +229,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.6...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.7...HEAD
+[1.4.7]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.6...v1.4.7
 [1.4.6]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.5...v1.4.6
 [1.4.5]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.3...v1.4.4
