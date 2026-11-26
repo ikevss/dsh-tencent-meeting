@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.4] - 2026-11-26
+
+### Fixed
+
+- **接口鉴权改为 fail closed**（收录方反馈）：`/tmeet/api` 现在必须拿到宿主的身份校验能力才放行；宿主没提供 `connection.requestRejection`、调用抛错或返回 401/403 时一律拒绝，不再"拿不到校验就照常处理"。
+
 ## [1.4.3] - 2026-11-26
 
 ### Changed
@@ -205,7 +211,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.3...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.4...HEAD
+[1.4.4]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.0...v1.4.1
