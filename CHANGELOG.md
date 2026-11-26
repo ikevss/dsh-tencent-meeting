@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.6] - 2026-11-26
+
+### Fixed
+
+- **设置页三个下拉改为原生 select**（用户反馈 #1「点击无法显示也无法下拉」）：原实现基于 Radix Select，靠 `pointerdown` 打开弹层；个别桌面宿主的 webview 会吞掉这类指针事件，表现就是点了没反应。换成系统原生控件后走系统弹层，不再依赖该事件链；外观沿用同一套边框 / 圆角 / chevron，选项（供应商 / 模型 / agent 预设）不变。
+
 ## [1.4.5] - 2026-11-26
 
 ### Fixed
@@ -217,7 +223,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.5...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.6...HEAD
+[1.4.6]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.5...v1.4.6
 [1.4.5]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.2...v1.4.3
