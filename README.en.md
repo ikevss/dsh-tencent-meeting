@@ -78,7 +78,7 @@ dsh plugin add dsh-tencent-meeting
 
 Restart DSH. A Tencent Meeting icon appears in the left sidebar and a **Tencent Meeting** section appears in settings.
 
-The meeting component is then installed automatically the first time it is needed (`npm i -g @tencentcloud/tmeet@1.1.0`). To do that step yourself instead:
+When the component is missing, the panel shows a guide screen; press **Install meeting component** once and it runs `npm i -g @tencentcloud/tmeet@1.1.0` with progress shown. Nothing is installed without that click. To do that step yourself instead:
 
 ```bash
 npm i -g @tencentcloud/tmeet@1.1.0
@@ -150,7 +150,7 @@ Five documents, generated with the model or agent preset selected in settings.
 
 Source material is the verbatim transcript when available, and the Tencent Meeting smart minutes when it is not. If neither exists, generation stops and says the meeting has no usable material instead of inventing content. One generation run reads at most three meetings, and truncates material beyond 60,000 characters with a note in the output.
 
-![Detail page with tabs](docs/screenshots/detail.png)
+![Post-meeting outputs tab](docs/screenshots/outputs.png)
 
 ## Security boundaries
 
