@@ -12,7 +12,7 @@ import * as api from './lib/api'
 import { errorText } from './lib/api'
 import { AutoTextarea, Banner, Button, Field, IconButton, Input } from './ui/base'
 import { Dialog, Select, Switch } from './ui/radix'
-import { Alert, ArrowRight, Calendar, Check, ChevronLeft, Users, Video, X } from './ui/icons'
+import { Alert, ArrowRight, Calendar, Check, ChevronDown, ChevronLeft, Users, Video, X } from './ui/icons'
 import type { ToastApi } from './ui/toast'
 
 export interface CreateDialogProps {
@@ -267,7 +267,7 @@ export function CreateDialog(props: CreateDialogProps): React.ReactElement {
   }
 
   const title = '新建会议'
-  const desc = '主题、时间、录制是必填；其余在「更多选项」里。点「提交」直接创建。'
+  const desc = '主题、时间、录制是必填；其余在「更多选项」里。点「下一步」先出预览，确认后才创建。'
 
   return (
     <Dialog
@@ -440,6 +440,7 @@ export function CreateDialog(props: CreateDialogProps): React.ReactElement {
               onClick={() => setShowMore((v) => !v)}
             >
               <span className="tm-more-label">{showMore ? '收起更多选项' : '更多选项'}</span>
+              <ChevronDown size={12} className="tm-chevron" />
             </button>
             {showMore ? (
               <div className="tm-more-body">
