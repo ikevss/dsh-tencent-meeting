@@ -1,231 +1,231 @@
 # dsh-tencent-meeting
 
-Tencent Meeting inside DeepSeek Harness: manage meetings in a panel, drive them from tools in the conversation, and let your own DSH model turn a finished meeting into five documents.
+把腾讯会议接进 DeepSeek Harness：在面板里管会议，在对话里用工具，会后五份文档交给你自己配置的 DSH 模型生成。
 
-This package is a thin shell around the official Tencent Meeting CLI (`@tencentcloud/tmeet`). Every meeting fact comes from that CLI. Every generated document comes from the model or the agent preset you configured in DSH.
+本包是腾讯会议官方 CLI（`@tencentcloud/tmeet`）的壳。所有会议事实都来自那个 CLI，所有生成的文档都来自你在 DSH 里选择的模型或 agent 预设。
 
-![Tencent Meeting panel in DSH](docs/screenshots/home.png)
+![DSH 中的腾讯会议面板](docs/screenshots/home.png)
 
-## What it does
+## 能做什么
 
-**In the panel.** A Tencent Meeting icon appears in the DSH sidebar. The home view separates in-progress and upcoming meetings from history; open any meeting for a detail page with tabs for transcript, smart minutes, timeline, todos and generated outputs. Creating, editing and cancelling meetings happens here too.
+**面板里管会。** 左栏多一个腾讯会议图标。主页两栏：左边进行中与即将开始，右边历史会议。点进任何一场，详情页有逐字稿、智能纪要、时间轴、待办、会后产出五个页签。建会、改会、取消也在这里。
 
-**In the conversation.** Fourteen `tm_*` tools are registered with DSH, covering list, search, read, create, update, cancel and minutes retrieval — no need to leave the chat. Any tool that asks which meeting accepts either the meeting ID or the 9-digit meeting code.
+**对话里管会。** 14 个 `tm_*` 工具已注册进 DSH：列会、搜会、读详情、建会、改会、取消、取纪要，都不用离开聊天窗口。要指认某场会，会议 ID 或 9 位会议号都可以。
 
-**After the meeting.** Five documents, produced on demand by your own model: meeting insight (how the room actually behaved — who drove it, who stayed quiet, with quoted evidence); company-view minutes for internal circulation; investor-view minutes for outside readers; a review report on what to change next time; and a Q&A list of what was asked and what was left unanswered. Eight `tm-*` skills cover scheduling, briefs, meeting writes and these five outputs, and the five can be turned off individually in settings.
+**会后出五份文档。** 会议洞察分析（看沟通方式：谁主导、谁没说话、有什么该说没说，带原话依据）；公司视角纪要（对内归档）；投资人视角纪要（对外读者）；复盘报告（这一场哪里好、下次改什么）；问答清单（问了什么、答了什么、哪些没答）。另有八条 `tm-*` 技能，覆盖查日程、出简报、建改会与这五份产出；五份产出可按需在设置里关闭。
 
-Source material follows a strict order: verbatim transcript first, Tencent smart minutes second. With neither present, generation stops and says why instead of inventing minutes from a title.
+素材规则：优先逐字稿，其次腾讯智能纪要；两者都没有就停下并说明，不会只凭标题编一份纪要。
 
-## Why it is worth using
+## 为什么值得用
 
-- **Writes are previewed before they happen.** Create, update, cancel, invite, participant edits and recording-permission requests all show what is about to change; nothing reaches Tencent Meeting until you confirm. Cancelling cannot be undone, and the confirmation shows the subject, time and meeting code first.
-- **It does not fill gaps.** Missing material is reported as missing — no invented figures, no fabricated conclusions. Investor-view minutes summarise; they do not advise.
-- **Credential boundaries are explicit.** The plugin never reads, copies or prints anything under `~/.tmeet`; sign-in stays with the CLI and only the authorisation link is relayed. Meeting data reaches only the model provider you configured, and only when you generate.
-- **A thin shell, easy to read.** No bundled copy of `cordis`, `schemastery` or `dsh-tools` (they arrive as host peer dependencies), and no meeting mirror written to disk.
+- **写操作先预览后确认。** 建会、改会、取消、邀请、改参会人、申请录制权限，都会先把将要发生的事摆出来，你确认才提交。取消不可恢复，确认前会先查出主题、时间、会议号给你核对。
+- **不猜。** 拿不到的素材就如实说拿不到：不补数字、不编结论；投资人视角纪要做归纳，不给投资建议。
+- **凭证边界写在明处。** 插件不读、不复制、不打印 `~/.tmeet` 下任何文件，登录交给 CLI，插件只转发授权链接；会议数据只发给你配置的模型供应商，且只在你按生成的那一刻。
+- **一层薄封装，读完不费劲。** 不打包 `cordis`、`schemastery`、`dsh-tools`（走宿主的 peerDependencies），也不在磁盘上存会议镜像。
 
-## Tool reference
+## 工具对照表
 
-All tools are registered on the DSH tool bus. Read-only tools declare `isConcurrencySafe: () => true`. Write tools take `confirm` and do nothing without it.
+全部工具注册在 DSH 的工具总线上。只读工具声明 `isConcurrencySafe: () => true`；写工具都收 `confirm`，不给就不动作。
 
-| Tool | What it returns |
+| 工具 | 返回什么 |
 | --- | --- |
-| `tm_status` | One-screen self check: CLI path and version, login state, capabilities, active preferences. Never returns secrets. |
-| `tm_meeting_list` | Upcoming or ended meetings from the local snapshot. Pass `refresh: true` to hit the API instead of the snapshot. |
-| `tm_meeting_get` | One meeting: time, meeting code, join link, subject, and the settings that are actually in force after enterprise policy. |
-| `tm_meeting_create` | Creates a meeting. Two-phase: preview first, submit on `confirm: true`. |
-| `tm_meeting_update` | Changes a meeting. Two-phase, and reads the current recording and transcription settings back before patching so they are not reset to CLI defaults. |
-| `tm_meeting_cancel` | Cancels a meeting. Two-phase. |
-| `tm_meeting_search` | Keyword search across meetings. A time window wider than 31 days is clamped automatically. |
-| `tm_record_summary` | Recording content: smart minutes, full transcript, speaker-segmented transcript, timeline, todos. |
-| `tm_meeting_brief` | Generates a one-page brief (decisions, action items, open questions, risks) with your DSH model. |
-| `tm_participants` | Participant list from the Tencent Meeting report, plus any locally added names. |
-| `tm_output` | Lists, reads or deletes the five post-meeting outputs generated earlier. |
-| `tm_plugin_info` | Package version, available models, available agent presets, installed skills, CLI diagnostics. |
-| `tm_review_plan` | Decides which review lens fits a meeting (17 types), what material is available, and what is missing. Local only, no Tencent quota. |
-| `tm_review_participation` | Who spoke how much (segments, characters, share) and who stayed silent, from the local transcript and roster. |
+| `tm_status` | 一屏自检：CLI 路径与版本、登录状态、可用能力、当前偏好。不含任何密钥。 |
+| `tm_meeting_list` | 从本地快照取即将开始或已结束的会议。传 `refresh: true` 才真取接口。 |
+| `tm_meeting_get` | 单场会议：时间、会议号、入会链接、主题，以及企业策略之后真实生效的设置。 |
+| `tm_meeting_create` | 建会。两阶段：先预览，`confirm: true` 才提交。 |
+| `tm_meeting_update` | 改会。两阶段，且改之前先把当前的录制与转写设置读回来，避免被 CLI 默认值重置。 |
+| `tm_meeting_cancel` | 取消会议。两阶段。 |
+| `tm_meeting_search` | 按关键词搜会。时间窗超过 31 天会自动收紧。 |
+| `tm_record_summary` | 录制内容：智能纪要、全文逐字稿、带说话人的分段、时间轴、待办。 |
+| `tm_meeting_brief` | 用你的 DSH 模型生成一页简报（结论、待办、未决问题、风险）。 |
+| `tm_participants` | 参会人名单，来自腾讯会议报告接口，外加本地补充的名字。 |
+| `tm_output` | 列出、读取或删除已生成的五份产出。 |
+| `tm_plugin_info` | 包版本、可选模型、可选 agent 预设、已装技能、CLI 诊断信息。 |
+| `tm_review_plan` | 判定这场会该用哪种复盘视角（17 类）、有哪些素材、缺什么。只读本地，不耗腾讯额度。 |
+| `tm_review_participation` | 谁发言多少（段数/字数/占比）、谁没说话，数据来自本机逐字稿与名单。 |
 
-## Requirements
+## 系统要求
 
-| Component | Minimum | Notes |
+| 组件 | 最低版本 | 说明 |
 | --- | --- | --- |
-| DSH | `0.2.1` and up | Verified on `0.2.2-rc.5`, both `dsh web` and the desktop build. |
-| Node.js | `22` | Matches the DSH host runtime. |
-| Tencent Meeting CLI | `1.1.0` | `@tencentcloud/tmeet`. Version `1.1.0` is the first release with `record content`, which the todos output depends on. |
+| DSH | `0.2.1` 及以上 | 已在 `0.2.2-rc.5` 实测，`dsh web` 与桌面端均可。 |
+| Node.js | `22` | 与 DSH 宿主运行时一致。 |
+| 腾讯会议 CLI | `1.1.0` | 即 `@tencentcloud/tmeet`。`1.1.0` 是第一个带 `record content` 的版本，待办产出依赖它。 |
 
-The plugin does not redistribute the Tencent Meeting CLI. When the component is missing the panel shows an **Install meeting component** button; press it once and the plugin runs `npm i -g @tencentcloud/tmeet@1.1.0` with progress shown. Nothing is installed without that click, and you can always install it yourself beforehand. It carries no copy of `cordis`, `schemastery` or `dsh-tools`; those come from the host through `peerDependencies`.
+插件不随包分发腾讯会议 CLI。缺组件时面板会显示引导页，点一次「安装会议组件」就会执行 `npm i -g @tencentcloud/tmeet@1.1.0` 并显示进度；也可以自己提前装好。它不携带 `cordis`、`schemastery`、`dsh-tools` 的副本，这几个都通过 `peerDependencies` 使用宿主提供的版本。
 
-### Version compatibility
+### 版本兼容
 
-| Layer | Requirement | What breaks when it is older |
+| 层 | 要求 | 低于该版本会怎样 |
 | --- | --- | --- |
-| DSH | `0.2.1` | The bundle manifest, tool bus and client slots this plugin uses do not exist below it. Current release `0.2.2-rc.5` is the tested target. |
-| Node.js | `22` | Matching the host runtime; the plugin spawns the CLI through Node. |
-| Tencent Meeting CLI | `1.1.0` | Reading recording content, searching meetings and todos need `record content` / `meeting search`, added in `1.1.0`. Older versions get a "needs upgrade" state, not silent failures. |
+| DSH | `0.2.1` | 本插件依赖的 bundle 清单、工具总线与客户端插槽都还不存在；当前版本 `0.2.2-rc.5` 是已实测的目标版本。 |
+| Node.js | `22` | 与 DSH 宿主运行时一致；插件通过 Node 起 CLI 子进程。 |
+| 腾讯会议 CLI | `1.1.0` | 读录制内容、搜会、看待办依赖 `record content` / `meeting search`，这些是 `1.1.0` 才有的。版本低会明确提示升级，不会静默失败。 |
 
-**Systems.** Windows 10/11 x64, macOS 12+ (Apple Silicon and Intel), Linux x64 and ARM64. The binary is located inside the installed npm package by its real platform filename, so a supported system is found rather than reported missing.
+**支持的系统。** Windows 10/11 x64、macOS 12+（Apple Silicon 与 Intel）、Linux x64 与 ARM64。二进制是按 npm 包里的真实平台文件名查找的，支持的系统一定能找到，不会被误报成「没装」。
 
-**Global install permission.** Installing the component writes to the npm global prefix. On macOS and Linux a system prefix such as `/usr/local` usually needs sudo; if that fails, install `@tencentcloud/tmeet@1.1.0` yourself once and the plugin finds it. The install always starts from a click in the panel — the plugin never installs anything on its own.
+**全局安装权限。** 装组件要写入 npm 全局目录。macOS / Linux 上如果是 `/usr/local` 这类系统目录，通常需要 sudo；装不上就自己执行一次 `@tencentcloud/tmeet@1.1.0`，插件会找到它。任何安装都从你在面板里点一下开始，插件不会自己动手。
 
-## Install
+## 安装
 
-Two steps, roughly two minutes.
+两步，大约两分钟。
 
-### 1. Install the plugin
+### 1. 安装插件
 
 ```bash
 dsh plugin add dsh-tencent-meeting
 ```
 
-Restart DSH. A Tencent Meeting icon appears in the left sidebar and a **Tencent Meeting** section appears in settings.
+重启 DSH。左栏出现腾讯会议图标，设置里出现「腾讯会议」一节。
 
-The meeting component is then installed automatically the first time it is needed (`npm i -g @tencentcloud/tmeet@1.1.0`). To do that step yourself instead:
+之后首次用到时，会议组件会自动装好（`npm i -g @tencentcloud/tmeet@1.1.0`）。如果你想自己动手：
 
 ```bash
 npm i -g @tencentcloud/tmeet@1.1.0
 tmeet --version
 ```
 
-### 2. Authorise
+### 2. 授权
 
-Open the panel. The first screen detects that you are not signed in and shows a single **Authorise** button. Press it, and the plugin forwards the OAuth device-code link printed by `tmeet auth login`. The browser handles the rest.
+打开面板。首屏会检测到未登录，只给一个「去授权」按钮。点它，插件把 `tmeet auth login` 打印的 OAuth 设备码链接转发给你，剩下的在浏览器里完成。
 
-The plugin never reads, copies or prints anything under `~/.tmeet`. It only relays the link.
+插件不读、不复制、不打印 `~/.tmeet` 下的任何文件，只转发那一条链接。
 
-![Authorisation guidance screen](docs/screenshots/auth.png)
+![未登录引导屏](docs/screenshots/auth.png)
 
-## Configuration
+## 配置
 
-### Plugin config
+### 插件配置
 
-Declared in `src/index.ts` as a Zod `Config` object. Every field has a default, so the plugin works immediately after installation. Values are volatile: the plugin reads them at call time, never inside `apply()`.
+在 `src/index.ts` 里以 Zod `Config` 对象声明。每个字段都有默认值，装完即用。值是易变的：插件在调用时读取，`apply()` 内不读。
 
-| Field | Default | Meaning |
+| 字段 | 默认值 | 含义 |
 | --- | --- | --- |
-| `tmeetBinary` | `''` | Explicit path to the `tmeet` executable. Empty means auto-discover: config, then package `dist`, then `PATH`, then the npm global prefix. |
-| `cliVersion` | `'1.1.0'` | CLI version to install or upgrade to when installing. |
-| `requestTimeoutMs` | `20000` | Timeout for a single CLI command, in milliseconds. |
-| `listCacheTtlMs` | `600000` | Lifetime of the meeting-list snapshot, in milliseconds. |
-| `outputSkills` | `['insight', 'minutes-company', 'minutes-investor', 'review', 'qa']` | Which of the five output skills are registered. |
+| `tmeetBinary` | `''` | 显式指定 `tmeet` 可执行文件路径。空表示自动查找：配置项、包内 `dist`、`PATH`、npm 全局前缀，依次尝试。 |
+| `cliVersion` | `'1.1.0'` | 安装或升级时要装到的 CLI 版本。 |
+| `requestTimeoutMs` | `20000` | 单条 CLI 命令超时，单位毫秒。 |
+| `listCacheTtlMs` | `600000` | 会议列表快照有效期，单位毫秒。 |
+| `outputSkills` | `['insight', 'minutes-company', 'minutes-investor', 'review', 'qa']` | 注册哪几份产出技能。 |
 
-### Settings page
+### 设置页
 
-The **Tencent Meeting** section in DSH settings writes user preferences to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` (atomic write, falls back to defaults on a read failure, never throws). These are hot-reloadable and separate from the deployment-level `Config`.
+DSH 设置里的「腾讯会议」一节会把用户偏好写到 `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json`（原子写，读失败回退默认值，绝不抛异常）。这一层可热更，与部署级的 `Config` 分开。
 
-| Field | Default | Meaning |
+| 字段 | 默认值 | 含义 |
 | --- | --- | --- |
-| `provider` | `''` | Model provider for generated outputs. Empty follows the DSH default model. |
-| `model` | `''` | Model name for generated outputs. Empty follows the DSH default model. |
-| `agentPreset` | `''` | Agent preset to delegate generation to. Empty means a single direct model call; non-empty delegates through the `subagents` service and says so when delegation is unavailable. |
-| `outputSkills` | `['insight', 'minutes-company', 'minutes-investor', 'review', 'qa']` | Which output skills are registered. Changing it unregisters and re-registers the skills. |
-| `notifyOnReady` | `false` | Notify when a generation finishes. |
+| `provider` | `''` | 生成产出用的模型供应商。空表示跟随 DSH 默认模型。 |
+| `model` | `''` | 生成产出用的模型名。空表示跟随 DSH 默认模型。 |
+| `agentPreset` | `''` | 委派生成用的 agent 预设。空表示单发一次模型调用；非空则走 `subagents` 服务委派，委派不可用时会明确告知，不静默降级。 |
+| `outputSkills` | `['insight', 'minutes-company', 'minutes-investor', 'review', 'qa']` | 注册哪几份产出技能。变更时先反注册再注册。 |
+| `notifyOnReady` | `false` | 生成完成时是否通知。 |
 
-![Settings page](docs/screenshots/settings.png)
+![设置页](docs/screenshots/settings.png)
 
-### Skills
+### 技能
 
-Eight skills ship with the plugin. Five of them are controlled by `outputSkills` and can be switched off in settings.
+插件带八个技能。其中五个受 `outputSkills` 控制，可以在设置里关掉。
 
-| Skill | Purpose |
+| 技能 | 用途 |
 | --- | --- |
-| `tm-schedule` | Answer "what meetings do I have today" from the panel data. |
-| `tm-meeting-brief` | Turn a meeting detail, smart minutes or transcript into a one-page brief. |
-| `tm-meeting-write` | Create or change a meeting with preview, then submit on confirmation. |
-| `tm-output-insight` | Meeting insight: communication behaviour (talk share, listening, facilitation style) with quoted evidence. |
-| `tm-output-company-minutes` | Company-view minutes. |
-| `tm-output-investor-minutes` | Investor-view minutes. |
-| `tm-output-review` | Post-meeting review report. |
-| `tm-output-qa` | Q&A list extracted from the meeting. |
+| `tm-schedule` | 基于面板数据回答「今天有哪些会」。 |
+| `tm-meeting-brief` | 把会议详情、智能纪要或逐字稿整理成一页简报。 |
+| `tm-meeting-write` | 建会或改会：先预览，确认后提交。 |
+| `tm-output-insight` | 会议洞察：沟通行为（发言占比、倾听、引导风格），带原话依据。 |
+| `tm-output-company-minutes` | 公司视角纪要。 |
+| `tm-output-investor-minutes` | 投资人视角纪要。 |
+| `tm-output-review` | 会后复盘报告。 |
+| `tm-output-qa` | 问答清单。 |
 
-## Post-meeting outputs
+## 会后产出
 
-Five documents, generated with the model or agent preset selected in settings.
+五份文档，用设置页里选的模型或 agent 预设生成。
 
-| Output | Kind key | What it contains |
+| 产出 | 类型键 | 内容 |
 | --- | --- | --- |
-| Meeting insight | `insight` | Communication behaviour: talk share, listening, facilitation style, with quoted evidence and one change to try. |
-| Company-view minutes | `minutes-company` | Decisions, owners, deadlines and follow-ups written for internal circulation. |
-| Investor-view minutes | `minutes-investor` | Business progress, numbers discussed and questions raised, written for an external reader. |
-| Review report | `review` | What went well, what did not, and what to change next time. |
-| Q&A list | `qa` | Every question asked and the answer given, as structured pairs. |
+| 会议洞察分析 | `insight` | 沟通行为：发言占比、倾听、引导风格，带原话依据和一条改进动作。 |
+| 公司视角纪要 | `minutes-company` | 决议、责任人、截止时间、后续动作，面向对内传阅。 |
+| 投资人视角纪要 | `minutes-investor` | 业务进展、讨论到的数字、提出的问题，面向对外读者。 |
+| 复盘报告 | `review` | 哪些做得好、哪些没做好、下次改什么。 |
+| 问答清单 | `qa` | 会上提出的每个问题与对应回答，整理成结构化问答对。 |
 
-Source material is the verbatim transcript when available, and the Tencent Meeting smart minutes when it is not. If neither exists, generation stops and says the meeting has no usable material instead of inventing content. One generation run reads at most three meetings, and truncates material beyond 60,000 characters with a note in the output.
+素材优先取逐字稿，没有就用腾讯会议的智能纪要。两者都没有时，生成会停下并说明「这场会没有可用素材」，不会凭空编造。单次生成最多读 3 场会；素材超过 6 万字会截断，并在产出里注明。
 
-![Detail page with tabs](docs/screenshots/detail.png)
+![详情页页签](docs/screenshots/detail.png)
 
-## Security boundaries
+## 安全边界
 
-- **No credential access.** The plugin does not read, copy or print any file under `~/.tmeet`. Login always runs `tmeet auth login` as a subprocess; only the printed authorisation link is forwarded.
-- **Nothing spawns at load.** `apply()` registers routes, tools, skills and slots. Zero child processes start until a tool call, an HTTP request or a click happens.
-- **Writes are preview-first.** Create, update, cancel, invite, participant edits, per-recording permission requests and in-meeting control all require `confirm: true` after a preview is rendered.
-- **Nothing is installed silently.** The panel asks before anything reaches your machine: press **Install meeting component** once and the plugin runs `npm i -g @tencentcloud/tmeet@1.1.0`, showing progress. Without that click, no install is attempted.
-- **Quota respected.** The Tencent Meeting CLI has a daily call cap. The list reads a local snapshot by default; live data is fetched only when you press **Sync** or open the panel for the first time. The detail page does not prefetch per row.
-- **No stack traces over the wire.** Every API failure returns `{ error, code }` with an appropriate 4xx status.
+- **不碰凭证。** 插件不读、不复制、不打印 `~/.tmeet` 下任何文件。登录一律以子进程运行 `tmeet auth login`，只转发它打印的授权链接。
+- **加载时不启进程。** `apply()` 只注册路由、工具、技能与插槽。在工具调用、HTTP 请求或用户点击发生之前，不启动任何子进程。
+- **写操作先预览。** 建会、改会、取消、邀请、改参会人、单场录制权限申请、会中控制，都要先渲染预览，`confirm: true` 才提交。
+- **不静默安装。** 面板会先问过你：点一次「安装会议组件」，插件才执行 `npm i -g @tencentcloud/tmeet@1.1.0` 并显示进度。没有这一下点击，不会有任何安装动作。
+- **尊重配额。** 腾讯会议 CLI 有日调用上限。列表默认读本地快照；只有你点「同步」或首次进面板时才真取数。详情页不逐行预取。
+- **不把堆栈发给前端。** 任何接口失败都返回 `{ error, code }` 加合适的 4xx 状态码。
 
-## Known limitations
+## 已知限制
 
-| Limitation | Detail |
+| 限制 | 说明 |
 | --- | --- |
-| No in-meeting live transcription | The plugin reads recording content after the meeting. There is no real-time subtitle stream. |
-| Cannot read someone else's recording transcript | Viewing another organiser's recording requires owner approval. The panel shows the permission state and offers a request flow; it cannot bypass the approval. |
-| Daily CLI quota | Tencent Meeting enforces a per-day call limit. Exceeding it returns error code `500246`; the panel and the tools report it as a quota error, not as a broken login. |
-| No local meeting database | Unlike some integrations, this plugin stores no meeting mirror on disk. Meeting facts are always read from the CLI. |
+| 不支持会中实时转写 | 插件读的是会后的录制内容，没有实时字幕流。 |
+| 看不到别人录制的转写 | 查看其他主持人的录制需要所有者审批。面板会显示审批状态并提供申请入口，但无法绕过审批。 |
+| CLI 有每日调用额度 | 腾讯会议按天限制调用次数，超了返回错误码 `500246`；面板与工具都会当作额度问题报告，而不是误报成登录失效。 |
+| 不落本地会议库 | 与其他集成不同，本插件不在磁盘上存会议镜像。会议事实一律从 CLI 读。 |
 
-## FAQ
+## 常见问题
 
-**The panel says I am not signed in after I authorised.**
-Confirm the CLI itself can see the session: run `tmeet auth status` in a terminal. If that reports signed out, the browser step did not complete. Press **Regenerate link** in the panel and finish the flow in the browser. Switching accounts requires `tmeet auth logout` first; the CLI rejects a second login while one is active.
+**授权之后面板还显示未登录。**
+先在终端确认 CLI 自己能看见会话：运行 `tmeet auth status`。如果那边也显示未登录，说明浏览器那一步没走完。在面板里点「重新生成链接」再走一遍。切换账号必须先 `tmeet auth logout`，CLI 在已有登录状态时会拒绝再次登录。
 
-**Error: CLI version mismatch.**
-The plugin needs `@tencentcloud/tmeet` `1.1.0`. Older releases lack `record content`, so todos, timeline and the Q&A output cannot work. Run `npm i -g @tencentcloud/tmeet@1.1.0` and reopen the panel.
+**报错说 CLI 版本不匹配。**
+插件需要 `@tencentcloud/tmeet` `1.1.0`。更早的版本没有 `record content`，待办、时间轴和问答产出都跑不了。执行 `npm i -g @tencentcloud/tmeet@1.1.0` 后重新打开面板。
 
-**Error code `500246`.**
-That is the daily CLI call quota, not a login or permission problem. It resets the next day. Until then, the panel serves the local snapshot and read operations keep working.
+**错误码 `500246`。**
+那是每日 CLI 调用额度用完了，不是登录失效，也不是权限问题。次日重置。在此之前面板继续提供本地快照，读操作照常可用。
 
-**There is no transcript for a meeting.**
-Three different causes look identical in the UI, so the detail page distinguishes them: recording was never enabled, transcription has not finished yet, or the meeting belongs to another organiser and requires approval. Each state shows its own message and, where possible, its own action.
+**这场会没有逐字稿。**
+三种不同的原因在界面上看起来一样，所以详情页会区分：根本没开录制、转写还没跑完、或者这场会属于别人需要审批。每种状态给各自的说明，能给的还给对应的操作入口。
 
-**Output generation says it has no material.**
-Neither a transcript nor smart minutes exist for that meeting. The plugin will not fabricate minutes from a title alone.
+**生成产出时说没有素材。**
+这场会既没有逐字稿也没有智能纪要。插件不会只凭一个标题就编出纪要。
 
-**Does it send my meeting data anywhere?**
-Only to the model provider you configured in DSH settings, and only when you press generate. Meeting data is never sent to Tencent beyond the CLI calls the official client already makes.
+**它会把我的会议数据发到哪里？**
+只会发到你在 DSH 设置里配置的模型供应商，而且只在你点生成时。除官方 CLI 本来就会发出的调用之外，会议数据不会再发给腾讯。
 
-## Roadmap
+## 路线图
 
-Version 1.0 is the current release. Version 2.0 merges the capabilities of the earlier `ikevss/ikevss-tencentmeeting` work: HTML invitation cards, email notification with an ICS calendar attachment, a richer post-meeting review report, and recognition of 17 meeting types. See [ROADMAP.md](ROADMAP.md) for the per-item breakdown of what gets built, why, and what it depends on.
+1.0 是当前版本。2.0 会融合早前 `ikevss/ikevss-tencentmeeting` 的能力：HTML 邀请函、邮件通知带 ICS 日历附件、更完整的会后复盘报告、17 种会议类型识别。每一项做什么、为什么、依赖什么，见 [ROADMAP.md](ROADMAP.md)。
 
-## Development
+## 开发
 
 ```bash
 npm install
 npm run typecheck     # tsc --noEmit
-npm run build:client  # bundle src/client into lib/client.js
-npm run build         # typecheck + client bundle
-npm run check         # node --check on both bundles
+npm run build:client  # 打包 src/client 到 lib/client.js
+npm run build         # 类型检查 + 客户端打包
+npm run check         # 对两个产物跑 node --check
 ```
 
-Source layout: `src/index.ts` is the entry and Config schema, `src/cli/` wraps the CLI (locate, install, exec, errors, command assembly), `src/services/` holds the domain layer, `src/routes.ts` is the `/tmeet/api` prefix, `src/tools.ts` registers the tools, `src/skills.ts` registers the skills, and `src/client/` is the React half.
+源码分工：`src/index.ts` 是入口与配置声明，`src/cli/` 包 CLI（查找、安装、执行、错误码、命令拼装），`src/services/` 是领域层，`src/routes.ts` 是 `/tmeet/api` 前缀路由，`src/tools.ts` 注册工具，`src/skills.ts` 注册技能，`src/client/` 是 React 那一半。
 
-## Screenshots
+## 截图
 
-All screenshots live in [docs/screenshots](docs/screenshots). They are captured from a real running DSH instance.
+所有截图放在 [docs/screenshots](docs/screenshots)，取自真实运行的 DSH 界面。
 
-| File | Shows |
+| 文件 | 拍什么 |
 | --- | --- |
-| `home.png` | Panel home: in-progress and upcoming on the left, history on the right. |
-| `outputs.png` | Post-meeting outputs tab: insight, company minutes, investor minutes, review, Q&A. |
-| `create.png` | Create-meeting dialog: fill in, then confirm. |
-| `settings.png` | The Tencent Meeting section in DSH settings. |
-| `auth.png` | The not-signed-in guidance screen. |
+| `home.png` | 面板主页：左侧进行中与历史会议，右侧详情。 |
+| `outputs.png` | 会后产出页签：会议洞察分析、公司视角纪要、投资人视角纪要、复盘报告、问答清单。 |
+| `create.png` | 建会弹窗：填内容、确认两步。 |
+| `settings.png` | DSH 设置里的腾讯会议一节。 |
+| `auth.png` | 未登录引导屏。 |
 
-## Contact
+## 联系
 
-Issues, feature requests and questions: [github.com/ikevss/dsh-tencent-meeting](https://github.com/ikevss/dsh-tencent-meeting) · ikevss@qq.com
+问题、需求与讨论：[github.com/ikevss/dsh-tencent-meeting](https://github.com/ikevss/dsh-tencent-meeting) · ikevss@qq.com
 
-## License and notices
+## 许可证与声明
 
-MIT. Copyright (c) 2026 ikevss. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+MIT，版权归 ikevss，2026 年。见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
 
-- This project is not affiliated with, endorsed by or sponsored by Tencent. "Tencent Meeting" and 腾讯会议 are trademarks of their respective owner.
-- The plugin does not redistribute the Tencent Meeting CLI; it invokes a copy installed from the official npm package `@tencentcloud/tmeet`.
-- Screenshots come from a real installation, and any names visible in them have been masked. No meeting content is published.
+- 本项目与腾讯无关，未获腾讯认可或赞助。「腾讯会议」及其标识归其权利人所有。
+- 插件不分发腾讯会议 CLI，只调用你从官方 npm 包 `@tencentcloud/tmeet` 装好的那份。
+- 截图取自真实运行环境，其中可见的姓名均已打码，不公开任何会议内容。
