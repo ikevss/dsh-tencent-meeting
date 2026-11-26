@@ -78,7 +78,7 @@ dsh plugin add dsh-tencent-meeting
 
 重启 DSH。左栏出现腾讯会议图标，设置里出现「腾讯会议」一节。
 
-之后首次用到时，会议组件会自动装好（`npm i -g @tencentcloud/tmeet@1.1.0`）。如果你想自己动手：
+缺组件时面板会显示引导页，点一次「安装会议组件」就会执行 `npm i -g @tencentcloud/tmeet@1.1.0` 并显示进度；没有这一下点击不会装任何东西。如果你想自己动手：
 
 ```bash
 npm i -g @tencentcloud/tmeet@1.1.0
@@ -150,7 +150,7 @@ DSH 设置里的「腾讯会议」一节会把用户偏好写到 `$DSH_HOME/plug
 
 素材优先取逐字稿，没有就用腾讯会议的智能纪要。两者都没有时，生成会停下并说明「这场会没有可用素材」，不会凭空编造。单次生成最多读 3 场会；素材超过 6 万字会截断，并在产出里注明。
 
-![详情页页签](docs/screenshots/detail.png)
+![会后产出页签：五份产出与生成入口](docs/screenshots/outputs.png)
 
 ## 安全边界
 
