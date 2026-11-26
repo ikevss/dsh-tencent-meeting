@@ -243,6 +243,7 @@ export function Detail(props: DetailProps): React.ReactElement {
     if (!hasRecord) return
     for (const kind of ['transcript', 'minutes'] as const) {
       if (api.cachedContent(id, kind)) continue
+      // 预热失败有意静默：页签自己会再取一次并把错误显示出来，这里不重复报错。
       void api.getContent(id, kind).catch(() => {})
     }
   }, [props.meetingId, props.brief])
