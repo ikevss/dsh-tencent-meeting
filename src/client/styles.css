@@ -2442,12 +2442,31 @@
 .tm-more-toggle {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   padding: 2px 0;
   border: 0;
   background: none;
   color: var(--dsw-alias-label-secondary, #6b7280);
   font-size: 12px;
   cursor: pointer;
+}
+
+.tm-more-toggle .tm-chevron {
+  transition: transform 0.15s ease;
+}
+
+.tm-more-toggle[aria-expanded='true'] .tm-chevron {
+  transform: rotate(180deg);
+}
+
+/* 产出正文元信息条：令牌底色，避免再光着一段灰 */
+.tm-output-metabar {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--dsw-alias-fill-l2, #f3f4f6);
+  color: var(--dsw-alias-label-secondary, #6b7280);
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .tm-more-toggle:hover {
@@ -2767,7 +2786,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  height: 30px;
+  padding: 0 12px;
   border-radius: 10px;
   border: 0.5px solid var(--dsw-alias-border-l2, #e5e7eb);
   background: var(--dsw-alias-bg-base, #fff);
@@ -2779,14 +2799,15 @@
 .tm-output-tab:hover { border-color: var(--dsw-alias-brand-primary, #2563eb); }
 
 .tm-output-tab.is-on {
-  background: var(--dsw-alias-fill-l2, #f3f4f6);
+  background: var(--dsw-alias-interactive-bg-active, rgba(38, 49, 72, 0.1));
   border-color: transparent;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .tm-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
+  margin-left: 2px;
   border-radius: 50%;
   display: inline-block;
 }
@@ -2802,7 +2823,7 @@
 /* 产出文档区：宽度自适应（预览弹层仍限宽） */
 
 .tm-output-rendered.tm-outview-page {
-  max-width: none;
+  max-width: 860px;
   margin: 0;
   width: 100%;
   box-sizing: border-box;
@@ -2978,8 +2999,9 @@
 
 .tm-sync-pop {
   position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
+  top: calc(100% + 8px);
+  left: auto;
+  right: 0;
   z-index: 60;
   min-width: 220px;
   padding: 8px 10px;
