@@ -153,12 +153,22 @@ export function getStatus(signal?: AbortSignal): Promise<PluginStatus> {
   return request<PluginStatus>('/status', { signal })
 }
 
-export function installCli(signal?: AbortSignal): Promise<OkMessage> {
-  return request<OkMessage>('/setup/install', { method: 'POST', body: { confirm: true }, signal })
+/** 安装或升级：不传 version 时装配置里的期望版本；传了就装那一版 */
+export function installCli(version?: string, signal?: AbortSignal): Promise<OkMessage> {
+  return request<OkMessage>('/setup/install', {
+    method: 'POST',
+    body: { confirm: true, ...(version ? { version } : {}) },
+    signal
+  })
 }
 
 export function getInstallStatus(signal?: AbortSignal): Promise<InstallStatusPayload> {
   return request<InstallStatusPayload>('/setup/install-status', { signal })
+}
+
+/** npm 上的最新版本；查不到为 null（界面就不显示升级入口） */
+export function getCliLatestVersion(signal?: AbortSignal): Promise<{ latest: string | null; at: number }> {
+  return request<{ latest: string | null; at: number }>('/setup/cli-version', { signal })
 }
 
 export function startAuth(switchAccount = false, signal?: AbortSignal): Promise<StartAuthPayload> {
