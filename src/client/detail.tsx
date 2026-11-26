@@ -465,7 +465,7 @@ export function Detail(props: DetailProps): React.ReactElement {
             {brief?.meetingCode ? <span>会议号 {formatMeetingCode(brief.meetingCode)}</span> : null}
             <Badge tone={badge.tone}>{badge.text}</Badge>
             {states.replay === 'ready' ? <Badge tone="brand">有回放</Badge> : null}
-            {brief?.hasTranscript ? <Badge tone="ok">有逐字稿</Badge> : null}
+            {brief?.hasTranscript ? <Badge tone="brand">有逐字稿</Badge> : null}
           </div>
         </div>
         <div className="tm-row" style={{ flex: 'none' }}>
