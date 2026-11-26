@@ -302,9 +302,14 @@ export function RevealMore(props: {
         </Button>
       ) : null}
       {props.expanded && props.onCollapse ? (
-        <Button size="sm" variant="text" onClick={props.onCollapse}>
-          收起
-        </Button>
+        <>
+          <span className="tm-caption">
+            已加载 {props.total - props.hidden}/{props.total} {noun}
+          </span>
+          <Button size="sm" variant="text" onClick={props.onCollapse}>
+            收起
+          </Button>
+        </>
       ) : null}
     </div>
   )
