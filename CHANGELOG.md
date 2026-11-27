@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md).
 
+## [1.4.10] - 2026-11-27
+
+### Fixed
+
+- **建会截图重拍**：上一张 `create.png` 底部按钮被裁掉半行，现已换成完整弹窗（说明、字段、「更多选项」、步骤条、「取消 / 下一步」齐全）。
+- **GitHub Pages 顶部版本号停留在 v1.3.0**，已更新为当前版本。
+
 ## [1.4.9] - 2026-11-27
 
 ### Changed
@@ -242,7 +249,8 @@ Skeleton release. Proves the plugin loads in DSH and can read meetings; it is no
 - Settings page with provider, model, agent preset and output-skill switches, persisted to `$DSH_HOME/plugin-data/dsh-tencent-meeting/prefs.json` with an atomic write.
 - Not-ready guidance screen that renders a distinct state per condition: CLI missing (with an install button and progress), version too low (with an upgrade button), not signed in (with an authorise button, a waiting state and a regenerate-link action), and authorisation expired.
 
-[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.9...HEAD
+[Unreleased]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.10...HEAD
+[1.4.10]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.9...v1.4.10
 [1.4.9]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.8...v1.4.9
 [1.4.8]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.7...v1.4.8
 [1.4.7]: https://github.com/ikevss/dsh-tencent-meeting/compare/v1.4.6...v1.4.7
